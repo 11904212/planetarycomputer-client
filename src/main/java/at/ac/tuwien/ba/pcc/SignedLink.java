@@ -1,3 +1,5 @@
+package at.ac.tuwien.ba.pcc;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 public class SignedLink {

@@ -1,7 +1,11 @@
+package at.ac.tuwien.ba.pcc;
+
+import at.ac.tuwien.ba.stac.client.Asset;
 import at.ac.tuwien.ba.stac.client.Item;
 import at.ac.tuwien.ba.stac.client.ItemCollection;
-import at.ac.tuwien.ba.stac.client.QueryParameter;
 import at.ac.tuwien.ba.stac.client.StacClient;
+import at.ac.tuwien.ba.stac.client.search.QueryParameter;
+import at.ac.tuwien.ba.stac.client.search.SortDirection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,14 +16,11 @@ import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
 import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
 import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
 import mil.nga.sf.geojson.FeatureCollection;
-//import mil.nga.sf.geojson.Polygon;
 import mil.nga.sf.geojson.Geometry;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.processing.CoverageProcessor;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.geotiff.GeoTiffWriter;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
@@ -27,106 +28,76 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.geometry.Envelope;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
-public class PlanetaryComputer {
+public class PlanetaryComputerImpl implements PlanetaryComputer{
 
     private final static String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1/sign";
+    private final static String PC_ENDPOINT = "https://planetarycomputer.microsoft.com/api/stac/v1/";
 
     private final ObjectMapper mapper;
+    private final StacClient stacClient;
+    private final URL urlPcEndpoint;
 
-    public PlanetaryComputer() {
+    public PlanetaryComputerImpl() throws MalformedURLException {
+
+        this.urlPcEndpoint = new URL(PC_ENDPOINT);
+
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        this.stacClient = new StacClient(this.urlPcEndpoint);
+
     }
 
 
-    public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException, ParseException, FactoryException, TransformException {
+    public static void main(String[] args) throws IOException, ParseException, FactoryException, TransformException {
 
         System.setProperty("org.geotools.referencing.forceXY", "true");
 
-        var pcClient = new PlanetaryComputer();
-
-        long start, stop;
+        var pcClient = new PlanetaryComputerImpl();
 
         var geom = pcClient.getJtsGeometry();
 
         URL stacEndpoint = new URL("https://planetarycomputer.microsoft.com/api/stac/v1/");
         StacClient client = new StacClient(stacEndpoint);
 
-        QueryParameter queryParameter = new QueryParameter();
-        queryParameter.addCollection("sentinel-2-l2a");
-        queryParameter.setDatetime("2022-02-13/2022-04-15");
-        queryParameter.setIntersects(pcClient.getGeometry());
+        Item newestItem = pcClient.getNewestItem("sentinel-2-l2a");
 
-        start = System.currentTimeMillis();
-        ItemCollection searchRes = client.search(queryParameter);
-        stop = System.currentTimeMillis();
-        System.out.printf("searchRes took %dms%n", stop-start);
+        Optional<Asset> visualAsset = newestItem.getAsset("visual");
 
-        double bestCC = Double.MAX_VALUE;
-        Item bestItem = searchRes.getItems().get(0);
+        if(visualAsset.isEmpty()) return;
 
-        for(Item item: searchRes.getItems()) {
-            double cloudCover = (double) item.getProperties().get("eo:cloud_cover");
-            if (cloudCover < bestCC) {
-                bestItem = item;
-                bestCC = cloudCover;
-            }
-
-        }
-
-        System.out.println(bestItem);
-
-        start = System.currentTimeMillis();
-        SignedLink signedLink = pcClient.signHref(bestItem.getAssets().get("visual").getHref());
-        stop = System.currentTimeMillis();
-        System.out.printf("signedLink took %dms%n", stop-start);
-
-        start = System.currentTimeMillis();
-        BasicAuthURI cogUri = new BasicAuthURI(signedLink.getHref(), false);
-        HttpRangeReader rangeReader =
-                new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
-        CogSourceSPIProvider input =
-                new CogSourceSPIProvider(
-                        cogUri,
-                        new CogImageReaderSpi(),
-                        new CogImageInputStreamSpi(),
-                        rangeReader.getClass().getName());
-
-        GeoTiffReader reader = new GeoTiffReader(input);
-
-        GridCoverage2D coverage = reader.read(null);
+        GridCoverage2D coverage = pcClient.getCoverage(visualAsset.get());
         Operations ops = new Operations(null);
 
 
         var cropedCoverage =  (GridCoverage2D) ops.crop(coverage, geom);
 
-        File file = new File("/home/martin/Dokumente/Ausbildung/TU_Wien/ba/test_data/test_crop/test3.tif");
+        File file = new File("/home/martin/Dokumente/Ausbildung/TU_Wien/ba/test_data/test_crop/test4.tif");
         GeoTiffWriter writer = new GeoTiffWriter(file);
         writer.write(cropedCoverage, null);
         writer.dispose();
 
-
-        stop = System.currentTimeMillis();
-
-        System.out.printf("took %dms", stop-start);
     }
 
     private SignedLink signHref(String href) throws IOException {
+
+        //TODO: add option for subscription-key and fetch token for collections on first request
 
         String uriStr = SAS_ENDPOINT + "?href=" + href;
 
@@ -215,8 +186,62 @@ public class PlanetaryComputer {
         CoordinateReferenceSystem sourceCRS = CRS.decode("EPSG:4326");
         CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:32633");
         MathTransform mathTransform = CRS.findMathTransform(sourceCRS, targetCRS);
-        Polygon p1 = (Polygon) JTS.transform(polygon, mathTransform);
 
-        return p1;
+        return (Polygon) JTS.transform(polygon, mathTransform);
+    }
+
+    @Override
+    public Item getNewestItem(String... collectionId) {
+        var query = new QueryParameter();
+        Arrays.stream(collectionId).forEach(query::addCollection);
+        query.setLimit(1);
+        query.addSortBy("datetime", SortDirection.DESC);
+        ItemCollection searchRes;
+
+        //TODO: throw Exception instead for null
+        try {
+            searchRes = this.stacClient.search(query);
+        } catch (IOException | URISyntaxException | InterruptedException e) {
+            return null;
+        }
+        if (searchRes.getItems().isEmpty()) {
+            return null;
+        }
+
+        return searchRes.getItems().get(0);
+    }
+
+    @Override
+    public List<Item> getItems(String wktAoi, int page, int size) {
+        return null;
+    }
+
+    @Override
+    public List<Item> getItems(String wktAoi) {
+        return null;
+    }
+
+    @Override
+    public Item getItem(String wktAoi, Date date) {
+        return null;
+    }
+
+    @Override
+    public GridCoverage2D getCoverage(Asset asset) throws IOException{
+        SignedLink signedLink = this.signHref(asset.getHref());
+
+        BasicAuthURI cogUri = new BasicAuthURI(signedLink.getHref(), false);
+        HttpRangeReader rangeReader =
+                new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+        CogSourceSPIProvider input =
+                new CogSourceSPIProvider(
+                        cogUri,
+                        new CogImageReaderSpi(),
+                        new CogImageInputStreamSpi(),
+                        rangeReader.getClass().getName());
+
+        GeoTiffReader reader = new GeoTiffReader(input);
+
+        return reader.read(null);
     }
 }
