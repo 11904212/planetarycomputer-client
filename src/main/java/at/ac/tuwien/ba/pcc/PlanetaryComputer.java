@@ -10,11 +10,9 @@ import java.util.List;
 
 public interface PlanetaryComputer {
 
-    Item getNewestItem(String... collectionId);
+    List<Item> getItems(List<String> collectionIds ,String wktAoi, int page, int size) throws IOException;
 
-    List<Item> getItems(String wktAoi, int page, int size);
-
-    List<Item> getItems(String wktAoi);
+    List<Item> getItems(List<String> collectionIds, String wktAoi) throws IOException;
 
     Item getItem(String wktAoi, Date date);
 

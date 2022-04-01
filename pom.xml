@@ -66,6 +66,24 @@
             <version>${imageio.ext.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>mil.nga</groupId>
+            <artifactId>sf</artifactId>
+            <version>2.0.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mil.nga.sf</groupId>
+            <artifactId>sf-wkt</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mil.nga.sf</groupId>
+            <artifactId>sf-geojson</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
 
     </dependencies>
 
