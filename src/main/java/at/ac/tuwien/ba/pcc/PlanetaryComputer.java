@@ -1,7 +1,8 @@
 package at.ac.tuwien.ba.pcc;
 
-import at.ac.tuwien.ba.stac.client.Asset;
-import at.ac.tuwien.ba.stac.client.Item;
+
+import at.ac.tuwien.ba.stac.client.core.Asset;
+import at.ac.tuwien.ba.stac.client.core.Item;
 import org.geotools.coverage.grid.GridCoverage2D;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public interface PlanetaryComputer {
 
-    List<Item> getItems(List<String> collectionIds ,String wktAoi, int page, int size) throws IOException;
+    List<Item> getItems(List<String> collectionIds , String wktAoi, int page, int size) throws IOException;
 
     List<Item> getItems(List<String> collectionIds, String wktAoi) throws IOException;
 
