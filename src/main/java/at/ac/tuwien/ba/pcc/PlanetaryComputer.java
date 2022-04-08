@@ -1,22 +1,21 @@
 package at.ac.tuwien.ba.pcc;
 
 
+import at.ac.tuwien.ba.stac.client.StacClient;
 import at.ac.tuwien.ba.stac.client.core.Asset;
-import at.ac.tuwien.ba.stac.client.core.Item;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.locationtech.jts.geom.Geometry;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 
 public interface PlanetaryComputer {
 
-    List<Item> getItems(List<String> collectionIds , String wktAoi, int page, int size) throws IOException;
-
-    List<Item> getItems(List<String> collectionIds, String wktAoi) throws IOException;
-
-    Item getItem(String wktAoi, Date date);
-
     GridCoverage2D getCoverage(Asset asset) throws IOException;
+
+    GridCoverage2D getCroppedCoverage(Asset asset, Geometry geometryAoi) throws IOException, FactoryException, TransformException;
+
+    StacClient getStacClient();
 
 }
