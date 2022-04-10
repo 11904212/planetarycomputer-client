@@ -6,7 +6,20 @@
 
     <groupId>at.ac.tuwien.ba</groupId>
     <artifactId>planetary-computer-client</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -16,6 +29,15 @@
         <stac-client.version>0.1</stac-client.version>
         <jackson.version>2.13.2.2</jackson.version>
     </properties>
+
+    <!-- configuration for GitHub Package Hosting -->
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub 11904212 Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/11904212/planetary-computer-client</url>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
