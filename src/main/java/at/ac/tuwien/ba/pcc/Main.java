@@ -10,6 +10,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.util.Arguments;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -25,18 +26,31 @@ import java.util.Optional;
 
 public class Main {
 
+    private final static String DEFAULT_WKT = "POLYGON((14.242 47.901,14.251 47.901,14.251 47.896,14.242 47.896,14.242 47.901))";
+    private static final String DEFAULT_DIR = "./test_data/";
+    private static final String DEFAULT_DATE = "2022-03-26T10:00:31.024000Z";
+
     public static void main(String[] args) throws IOException, ParseException, FactoryException, TransformException, URISyntaxException, InterruptedException {
 
-        final String wktPolygon = "POLYGON((14.242 47.901,14.251 47.901,14.251 47.896,14.242 47.896,14.242 47.901))";
-        final String dir = "./test_data/";
+        // read args from input
+        Arguments processedArgs = new Arguments(args);
+        String wktPolygon = processedArgs.getOptionalString("-a");
+        String dir = processedArgs.getOptionalString("-o");
         final String collection = "sentinel-2-l2a";
-        final String datetime = "2022-03-26T10:00:31.024000Z";
+        String datetime = processedArgs.getOptionalString("-d");
 
+        // set default if not present
+        if (wktPolygon == null) wktPolygon = DEFAULT_WKT;
+        if (dir == null) dir = DEFAULT_DIR;
+        if (datetime == null) datetime = DEFAULT_DATE;
+
+        // time for performance measurement
         long start, stop;
 
         PlanetaryComputer pcClient = new PlanetaryComputerImpl();
         StacClient stacClient = pcClient.getStacClient();
 
+        // search for items
         QueryParameter parameter = new QueryParameter();
         parameter.addCollection(collection);
         parameter.setIntersects(wktToGeoJson(wktPolygon));
@@ -54,6 +68,7 @@ public class Main {
 
         var item = itemCollection.getItems().get(0);
 
+        // get relevant bands
         Optional<Asset> b04Asset = item.getAsset("B04");
         Optional<Asset> b08Asset = item.getAsset("B08");
         if(b04Asset.isEmpty() || b08Asset.isEmpty()) {
@@ -64,14 +79,18 @@ public class Main {
         var aoiGeom = wktToJtsGeometry(wktPolygon);
         aoiGeom.setSRID(4326);
 
+        // get geotiff from planetary computer
         start = System.currentTimeMillis();
         GridCoverage2D coverageB04 = pcClient.getCroppedCoverage(b04Asset.get(), aoiGeom);
         GridCoverage2D coverageB08 = pcClient.getCroppedCoverage(b08Asset.get(), aoiGeom);
         stop = System.currentTimeMillis();
         System.out.printf("pcClient.getCroppedCoverage() took %dms%n", stop - start);
 
+        // calculate ndvi from b04 and b08
         GridCoverage2D coverageNdvi = calcCoverageNdvi(coverageB08, coverageB04);
 
+
+        // output files
         String filename = item.getId() + "_" + "ndvi";
 
         File directory = new File(dir);
@@ -131,7 +150,7 @@ public class Main {
 
         int[] pixelRowNIR = new int[width * numBands];
         int[] pixelRowRed = new int[width * numBands];
-        float[][] matrixNdvi = new float[width][height];
+        float[][] matrixNdvi = new float[height][width];
         for (int i = 0; i < height; i++) {
             rasterNIR.getPixels(rasterNIR.getMinX(), rasterNIR.getMinY() + i, width, 1, pixelRowNIR);
             rasterRed.getPixels(rasterRed.getMinX(), rasterRed.getMinY() + i, width, 1, pixelRowRed);
@@ -140,7 +159,7 @@ public class Main {
                 float valNIR, valRed;
                 valNIR = pixelRowNIR[k];
                 valRed = pixelRowRed[k];
-                matrixNdvi[k][i] = ( valNIR - valRed ) / ( valNIR + valRed );
+                matrixNdvi[i][k] = ( valNIR - valRed ) / ( valNIR + valRed );
 
             }
         }
