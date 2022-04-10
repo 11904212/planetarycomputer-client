@@ -26,23 +26,32 @@ import java.util.Optional;
 
 public class Main {
 
-    private final static String DEFAULT_WKT = "POLYGON((14.242 47.901,14.251 47.901,14.251 47.896,14.242 47.896,14.242 47.901))";
+    private final static String EXAMPLE_WKT = "POLYGON((14.242 47.901,14.251 47.901,14.251 47.896,14.242 47.896,14.242 47.901))";
     private static final String DEFAULT_DIR = "./test_data/";
-    private static final String DEFAULT_DATE = "2022-03-26T10:00:31.024000Z";
+    private static final String EXAMPLE_DATE = "2022-03-26T10:00:31.024000Z";
 
     public static void main(String[] args) throws IOException, ParseException, FactoryException, TransformException, URISyntaxException, InterruptedException {
 
         // read args from input
         Arguments processedArgs = new Arguments(args);
-        String wktPolygon = processedArgs.getOptionalString("-a");
+        Optional<String> wktPolygon = Optional.ofNullable(
+                processedArgs.getOptionalString("-a")
+        );
+
+        if (wktPolygon.isEmpty()){
+            printUsage();
+            System.exit(1);
+        }
+
+        // optional args
         String dir = processedArgs.getOptionalString("-o");
         final String collection = "sentinel-2-l2a";
-        String datetime = processedArgs.getOptionalString("-d");
+        Optional<String> datetime = Optional.ofNullable(
+                processedArgs.getOptionalString("-d")
+        );
 
         // set default if not present
-        if (wktPolygon == null) wktPolygon = DEFAULT_WKT;
         if (dir == null) dir = DEFAULT_DIR;
-        if (datetime == null) datetime = DEFAULT_DATE;
 
         // time for performance measurement
         long start, stop;
@@ -53,9 +62,9 @@ public class Main {
         // search for items
         QueryParameter parameter = new QueryParameter();
         parameter.addCollection(collection);
-        parameter.setIntersects(wktToGeoJson(wktPolygon));
+        parameter.setIntersects(wktToGeoJson(wktPolygon.get()));
         parameter.setLimit(1);
-        parameter.setDatetime(datetime);
+        datetime.ifPresent(parameter::setDatetime);
 
         start = System.currentTimeMillis();
         var itemCollection = stacClient.search(parameter);
@@ -76,7 +85,7 @@ public class Main {
             return;
         }
 
-        var aoiGeom = wktToJtsGeometry(wktPolygon);
+        var aoiGeom = wktToJtsGeometry(wktPolygon.get());
         aoiGeom.setSRID(4326);
 
         // get geotiff from planetary computer
@@ -108,12 +117,29 @@ public class Main {
         writer.dispose();
 
         File fileGeoJson = new File(dir + filename +".geojson");
-        String geoJsonContent = FeatureConverter.toStringValue(wktToGeoJson(wktPolygon));
+        String geoJsonContent = FeatureConverter.toStringValue(wktToGeoJson(wktPolygon.get()));
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileGeoJson));
         bufferedWriter.write(geoJsonContent);
         bufferedWriter.close();
 
         System.out.println("please be patient, GeoTiffWriter needs some time to free up the resources.");
+
+    }
+
+    private static void printUsage() {
+        System.out.println(
+                "Usage: -a areaOfInterest [-d datetime -o outputDirectory] ");
+        System.out.printf("%n" +
+                "-a     area of interest as well know text (required), coordinate reference system: WGS84 (EPSG:4326)%n" +
+                "-d     datetime of the datetime of the desired entry in the following format: 2018-02-12T23:20:50Z%n" +
+                "-o     output directory for the GeoTif and GeoJson file%n"
+        );
+
+        System.out.printf("%nExample: -a \"%s\" -d \"%s\" -o \"%s\"%n",
+                EXAMPLE_WKT,
+                EXAMPLE_DATE,
+                DEFAULT_DIR
+                );
 
     }
 
