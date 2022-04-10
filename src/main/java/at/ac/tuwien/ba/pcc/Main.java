@@ -7,6 +7,7 @@ import mil.nga.sf.geojson.FeatureConverter;
 import mil.nga.sf.geojson.GeoJsonObject;
 import mil.nga.sf.wkt.GeometryReader;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -28,7 +29,6 @@ public class Main {
 
         final String wktPolygon = "POLYGON((14.242 47.901,14.251 47.901,14.251 47.896,14.242 47.896,14.242 47.901))";
         final String dir = "./test_data/";
-        final String assetType = "visual";
         final String collection = "sentinel-2-l2a";
         final String datetime = "2022-03-26T10:00:31.024000Z";
 
@@ -54,18 +54,25 @@ public class Main {
 
         var item = itemCollection.getItems().get(0);
 
-        Optional<Asset> visualAsset = item.getAsset(assetType);
-        if(visualAsset.isEmpty()) return;
+        Optional<Asset> b04Asset = item.getAsset("B04");
+        Optional<Asset> b08Asset = item.getAsset("B08");
+        if(b04Asset.isEmpty() || b08Asset.isEmpty()) {
+            System.out.println("could not finde assets B04 or B08, terminating");
+            return;
+        }
 
         var aoiGeom = wktToJtsGeometry(wktPolygon);
         aoiGeom.setSRID(4326);
 
         start = System.currentTimeMillis();
-        GridCoverage2D coverage = pcClient.getCroppedCoverage(visualAsset.get(), aoiGeom);
+        GridCoverage2D coverageB04 = pcClient.getCroppedCoverage(b04Asset.get(), aoiGeom);
+        GridCoverage2D coverageB08 = pcClient.getCroppedCoverage(b08Asset.get(), aoiGeom);
         stop = System.currentTimeMillis();
         System.out.printf("pcClient.getCroppedCoverage() took %dms%n", stop - start);
 
-        String filename = item.getId() + "_" + assetType;
+        GridCoverage2D coverageNdvi = calcCoverageNdvi(coverageB08, coverageB04);
+
+        String filename = item.getId() + "_" + "ndvi";
 
         File directory = new File(dir);
         if (! directory.exists()){
@@ -78,7 +85,7 @@ public class Main {
 
         File file = new File(dir + filename +".tif");
         GeoTiffWriter writer = new GeoTiffWriter(file);
-        writer.write(coverage, null);
+        writer.write(coverageNdvi, null);
         writer.dispose();
 
         File fileGeoJson = new File(dir + filename +".geojson");
@@ -101,5 +108,50 @@ public class Main {
         WKTReader reader = new WKTReader(geometryFactory);
 
         return reader.read(wkt);
+    }
+
+    private static GridCoverage2D calcCoverageNdvi(GridCoverage2D nir, GridCoverage2D red){
+
+        var rasterNIR = nir.getRenderedImage().getData();
+        var rasterRed = red.getRenderedImage().getData();
+
+        if (
+                rasterNIR.getMinX() != rasterRed.getMinX()
+                        || rasterNIR.getMinY() != rasterRed.getMinY()
+                        || rasterNIR.getNumBands() != rasterRed.getNumBands()
+                        || rasterNIR.getHeight() != rasterRed.getHeight()
+                        || rasterNIR.getWidth() != rasterRed.getWidth()
+        ) {
+            throw new IllegalArgumentException("given not computable");
+        }
+
+        int numBands = rasterNIR.getNumBands();
+        int height = rasterNIR.getHeight();
+        int width = rasterNIR.getWidth();
+
+        int[] pixelRowNIR = new int[width * numBands];
+        int[] pixelRowRed = new int[width * numBands];
+        float[][] matrixNdvi = new float[width][height];
+        for (int i = 0; i < height; i++) {
+            rasterNIR.getPixels(rasterNIR.getMinX(), rasterNIR.getMinY() + i, width, 1, pixelRowNIR);
+            rasterRed.getPixels(rasterRed.getMinX(), rasterRed.getMinY() + i, width, 1, pixelRowRed);
+
+            for (int k=0; k<pixelRowNIR.length; k++){
+                float valNIR, valRed;
+                valNIR = pixelRowNIR[k];
+                valRed = pixelRowRed[k];
+                matrixNdvi[k][i] = ( valNIR - valRed ) / ( valNIR + valRed );
+
+            }
+        }
+
+        var factory = new GridCoverageFactory();
+        var envelop = nir.getEnvelope();
+
+        return factory.create(
+                "ndvi",
+                matrixNdvi,
+                envelop
+        );
     }
 }
