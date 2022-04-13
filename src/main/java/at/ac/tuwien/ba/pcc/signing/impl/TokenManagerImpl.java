@@ -59,7 +59,7 @@ public class TokenManagerImpl implements TokenManager {
         if (
                 !tokenCache.containsKey(tokenKey)   // no token
                 || tokenCache.get(tokenKey)
-                        .getMsftExpiry().isAfter(ZonedDateTime.now().plusMinutes(5)) // token expired
+                        .getMsftExpiry().isBefore(ZonedDateTime.now().plusMinutes(5)) // token expired
         ) {
             var newToken = requestToken(tokenKey);
             tokenCache.put(tokenKey, newToken);
