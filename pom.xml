@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Planetary Computer Client</name>
+    <name>PlanetaryComputer Client</name>
     <groupId>at.ac.tuwien.ba</groupId>
-    <artifactId>planetary-computer-client</artifactId>
+    <artifactId>planetarycomputer-client</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -48,7 +48,7 @@
         <repository>
             <id>github</id>
             <name>GitHub 11904212 Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/11904212/planetary-computer-client</url>
+            <url>https://maven.pkg.github.com/11904212/planetarycomputer-client</url>
         </repository>
     </distributionManagement>
 
