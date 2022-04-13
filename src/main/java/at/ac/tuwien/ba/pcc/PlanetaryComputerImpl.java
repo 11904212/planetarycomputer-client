@@ -1,31 +1,18 @@
 package at.ac.tuwien.ba.pcc;
 
 import at.ac.tuwien.ba.stac.client.StacClient;
-import at.ac.tuwien.ba.stac.client.core.Asset;
+import at.ac.tuwien.ba.stac.client.core.Catalog;
+import at.ac.tuwien.ba.stac.client.core.Collection;
+import at.ac.tuwien.ba.stac.client.core.Item;
 import at.ac.tuwien.ba.stac.client.impl.StacClientImpl;
+import at.ac.tuwien.ba.stac.client.search.ItemCollection;
+import at.ac.tuwien.ba.stac.client.search.dto.QueryParameter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.geosolutions.imageio.core.BasicAuthURI;
-import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
-import it.geosolutions.imageioimpl.plugins.cog.CogImageInputStreamSpi;
-import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
-import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
-import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.processing.Operations;
-import org.geotools.gce.geotiff.GeoTiffReader;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
-import org.locationtech.jts.geom.Geometry;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public class PlanetaryComputerImpl implements PlanetaryComputer {
@@ -35,6 +22,7 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
 
     private final ObjectMapper mapper;
     private final StacClient stacClient;
+    private final TokenManager tokenManager;
     private final URL urlPcEndpoint;
 
     public PlanetaryComputerImpl() throws MalformedURLException {
@@ -46,63 +34,33 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
 
         this.stacClient = new StacClientImpl(this.urlPcEndpoint);
 
-        //TODO find a other solution
-        System.setProperty("org.geotools.referencing.forceXY", "true");
+        this.tokenManager = new TokenManager();
 
     }
 
-
     @Override
-    public GridCoverage2D getCoverage(Asset asset) throws IOException {
-        SignedLink signedLink = this.signHref(asset.getHref());
-
-        BasicAuthURI cogUri = new BasicAuthURI(signedLink.getHref(), false);
-        HttpRangeReader rangeReader =
-                new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
-        CogSourceSPIProvider input =
-                new CogSourceSPIProvider(
-                        cogUri,
-                        new CogImageReaderSpi(),
-                        new CogImageInputStreamSpi(),
-                        rangeReader.getClass().getName());
-
-        GeoTiffReader reader = new GeoTiffReader(input);
-
-        return reader.read(null);
+    public Catalog getCatalog() throws IOException {
+        return stacClient.getCatalog();
     }
 
     @Override
-    public GridCoverage2D getCroppedCoverage(Asset asset, Geometry geometryAoi) throws IOException, FactoryException, TransformException {
-        var coverage = this.getCoverage(asset);
+    public Collection getCollection(String id) throws IOException {
+        return stacClient.getCollection(id);
+    }
 
-        CoordinateReferenceSystem sourceCRS;
-        if (geometryAoi.getSRID() != 0) {
-            sourceCRS = CRS.decode("EPSG:" + geometryAoi.getSRID());
-        } else {
-            sourceCRS = CRS.decode("EPSG:4326");
+    @Override
+    public Item getItem(String collectionId, String itemId) throws IOException {
+        var item = stacClient.getItem(collectionId, itemId);
+        tokenManager.signInPlace(item);
+        return item;
+    }
+
+    @Override
+    public ItemCollection search(QueryParameter queryParameter) throws IOException, URISyntaxException, InterruptedException {
+        var itemCollection = stacClient.search(queryParameter);
+        for (var item : itemCollection.getItems()){
+            tokenManager.signInPlace(item);
         }
-
-        CoordinateReferenceSystem targetCRS = coverage.getCoordinateReferenceSystem();
-        MathTransform mathTransform = CRS.findMathTransform(sourceCRS, targetCRS);
-
-        var geomTargetCRS = JTS.transform(geometryAoi, mathTransform);
-        ReferencedEnvelope envelope = new ReferencedEnvelope(geomTargetCRS.getEnvelopeInternal(), targetCRS);
-
-        Operations ops = new Operations(null);
-        return (GridCoverage2D) ops.crop(coverage, envelope);
-    }
-
-    @Override
-    public StacClient getStacClient() {
-        return stacClient;
-    }
-
-
-    private SignedLink signHref(String href) throws IOException {
-
-        String uriStr = SAS_ENDPOINT + "?href=" + href;
-
-        return mapper.readValue(URI.create(uriStr).toURL(), SignedLink.class);
-
+        return itemCollection;
     }
 }
