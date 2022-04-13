@@ -1,5 +1,8 @@
 package at.ac.tuwien.ba.pcc;
 
+import at.ac.tuwien.ba.pcc.signing.SignedLink;
+import at.ac.tuwien.ba.pcc.signing.TokenManager;
+import at.ac.tuwien.ba.pcc.signing.TokenManagerImpl;
 import at.ac.tuwien.ba.stac.client.StacClient;
 import at.ac.tuwien.ba.stac.client.core.Asset;
 import at.ac.tuwien.ba.stac.client.impl.StacClientImpl;
@@ -33,18 +36,17 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
     private final static String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1/sign";
     private final static String PC_ENDPOINT = "https://planetarycomputer.microsoft.com/api/stac/v1/";
 
-    private final ObjectMapper mapper;
     private final StacClient stacClient;
+    private final TokenManager tokenManager;
     private final URL urlPcEndpoint;
 
     public PlanetaryComputerImpl() throws MalformedURLException {
 
         this.urlPcEndpoint = new URL(PC_ENDPOINT);
 
-        this.mapper = new ObjectMapper()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
         this.stacClient = new StacClientImpl(this.urlPcEndpoint);
+
+        this.tokenManager = new TokenManagerImpl();
 
         //TODO find a other solution
         System.setProperty("org.geotools.referencing.forceXY", "true");
@@ -54,7 +56,7 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
 
     @Override
     public GridCoverage2D getCoverage(Asset asset) throws IOException {
-        SignedLink signedLink = this.signHref(asset.getHref());
+        SignedLink signedLink = this.tokenManager.signAsset(asset);
 
         BasicAuthURI cogUri = new BasicAuthURI(signedLink.getHref(), false);
         HttpRangeReader rangeReader =
@@ -98,11 +100,4 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
     }
 
 
-    private SignedLink signHref(String href) throws IOException {
-
-        String uriStr = SAS_ENDPOINT + "?href=" + href;
-
-        return mapper.readValue(URI.create(uriStr).toURL(), SignedLink.class);
-
-    }
 }
