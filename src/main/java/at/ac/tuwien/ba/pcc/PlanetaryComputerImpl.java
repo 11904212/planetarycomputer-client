@@ -1,8 +1,10 @@
 package at.ac.tuwien.ba.pcc;
 
+import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import at.ac.tuwien.ba.pcc.signing.TokenManager;
 import at.ac.tuwien.ba.pcc.signing.impl.TokenManagerImpl;
 import at.ac.tuwien.ba.stac.client.StacClient;
+import at.ac.tuwien.ba.stac.client.core.Asset;
 import at.ac.tuwien.ba.stac.client.core.Catalog;
 import at.ac.tuwien.ba.stac.client.core.Collection;
 import at.ac.tuwien.ba.stac.client.core.Item;
@@ -51,9 +53,29 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
     @Override
     public ItemCollection search(QueryParameter queryParameter) throws IOException, URISyntaxException, InterruptedException {
         var itemCollection = stacClient.search(queryParameter);
+        return sign(itemCollection);
+    }
+
+    @Override
+    public StacClient getStacClientInstance() {
+        return stacClient;
+    }
+
+    @Override
+    public Item sign(Item item) throws IOException {
+        return tokenManager.signInPlace(item);
+    }
+
+    @Override
+    public ItemCollection sign(ItemCollection itemCollection) throws IOException {
         for (var item : itemCollection.getItems()){
             tokenManager.signInPlace(item);
         }
         return itemCollection;
+    }
+
+    @Override
+    public SignedAsset sign(Asset asset, String collectionId) throws IOException {
+        return tokenManager.sign(asset, collectionId);
     }
 }

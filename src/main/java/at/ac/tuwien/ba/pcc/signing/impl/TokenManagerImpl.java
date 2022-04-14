@@ -35,23 +35,41 @@ public class TokenManagerImpl implements TokenManager {
     }
 
     @Override
-    public void signInPlace(Item item) throws IOException {
+    public Item signInPlace(Item item) throws IOException {
         if (item.getCollection().isPresent()){
             var assets = item.getAssets();
             for (var key : assets.keySet()){
                 Asset oldAsset = assets.get(key);
-                SignedLink signedLink = signWithToken(
-                        oldAsset.getHref(),
-                        item.getCollection().get()
-                );
-                SignedAsset newAsset = new SignedAssetImpl(
+
+                SignedAsset newAsset = sign(
                         oldAsset,
-                        signedLink
+                        item.getCollection().get()
                 );
                 assets.put(key, newAsset);
             }
+        } else {
+            // TODO: could sign by href, but should we? (the performance would be terrible)
         }
-        // TODO: could sign by href, but should we?
+
+        return item;
+    }
+
+    @Override
+    public SignedAsset sign(Asset asset, String collectionId) throws IOException {
+        var signedLink = signWithToken(asset.getHref(), collectionId);
+        return new SignedAssetImpl(
+                asset,
+                signedLink
+        );
+    }
+
+    @Override
+    public SignedAsset sign(Asset asset) throws IOException {
+        var signedLink = directSignHref(asset.getHref());
+        return new SignedAssetImpl(
+                asset,
+                signedLink
+        );
     }
 
     private SignedLink signWithToken(String href, String tokenKey) throws IOException {
