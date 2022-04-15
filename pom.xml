@@ -7,7 +7,7 @@
     <name>PlanetaryComputer Client</name>
     <groupId>at.ac.tuwien.ba</groupId>
     <artifactId>planetarycomputer-client</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1-DEMO-1</version>
     <packaging>jar</packaging>
 
     <build>
@@ -56,7 +56,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <stac-client.version>0.1-SNAPSHOT</stac-client.version>
+        <stac-client.version>0.1-DEMO-1</stac-client.version>
         <jackson.version>2.13.2.2</jackson.version>
     </properties>
 
