@@ -1,21 +1,51 @@
 package at.ac.tuwien.ba.pcc;
 
 
+import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import at.ac.tuwien.ba.stac.client.StacClient;
 import at.ac.tuwien.ba.stac.client.core.Asset;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.locationtech.jts.geom.Geometry;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
+import at.ac.tuwien.ba.stac.client.core.Item;
+import at.ac.tuwien.ba.stac.client.search.ItemCollection;
 
 import java.io.IOException;
 
-public interface PlanetaryComputer {
+/**
+ * signs the resources of the planetary computer with a sas token to make them accessible.
+ * for more information @see <a href="https://planetarycomputer.microsoft.com/docs/concepts/sas/</a>
+ */
+public interface PlanetaryComputer extends StacClient {
 
-    GridCoverage2D getCoverage(Asset asset) throws IOException;
 
-    GridCoverage2D getCroppedCoverage(Asset asset, Geometry geometryAoi) throws IOException, FactoryException, TransformException;
+    /**
+     * gets the instance of {@link StacClient} which refers to the planetary computer.
+     * @return the instance
+     */
+    StacClient getStacClientInstance();
 
-    StacClient getStacClient();
+    /**
+     * signs an {@link Item} with a sas token, all {@link Asset}s of the item will by replaces by {@link SignedAsset}
+     * @param item to sign
+     * @return the same item but with signed assets
+     * @throws IOException
+     */
+    Item sign(Item item) throws IOException;
+
+    /**
+     * signs all {@link Item}s of an {@link ItemCollection} with a sas token,
+     * all {@link Asset}s of each {@link Item} the item will by replaces by {@link SignedAsset}
+     * @param itemCollection to sign
+     * @return the same itemCollection but with signed assets
+     * @throws IOException
+     */
+    ItemCollection sign(ItemCollection itemCollection) throws IOException;
+
+    /**
+     * signs a single {@link Asset}
+     * @param asset to sign
+     * @param collectionId the collection of the asset
+     * @return a {@link SignedAsset}
+     * @throws IOException
+     */
+    SignedAsset sign(Asset asset, String collectionId) throws IOException;
 
 }
