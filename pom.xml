@@ -7,7 +7,7 @@
     <name>PlanetaryComputer Client</name>
     <groupId>at.ac.tuwien.ba</groupId>
     <artifactId>planetarycomputer-client</artifactId>
-    <version>0.1-DEMO-1</version>
+    <version>0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <build>
@@ -15,11 +15,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                 </configuration>
+            </plugin>
+
+            <!-- required to run JUnit 5 tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
             </plugin>
 
             <!-- needed for deploy on GitHub -->
@@ -53,11 +60,13 @@
     </distributionManagement>
 
     <properties>
+        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <stac-client.version>0.1-DEMO-1</stac-client.version>
-        <jackson.version>2.13.2.2</jackson.version>
+        <stac-client.version>0.3-SNAPSHOT</stac-client.version>
+        <jackson.version>2.13.3</jackson.version>
     </properties>
 
 
