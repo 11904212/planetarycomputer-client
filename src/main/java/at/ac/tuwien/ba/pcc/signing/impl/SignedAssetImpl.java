@@ -2,7 +2,7 @@ package at.ac.tuwien.ba.pcc.signing.impl;
 
 import at.ac.tuwien.ba.pcc.dto.SignedLink;
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
-import at.ac.tuwien.ba.stac.client.core.Asset;
+import io.github11904212.java.stac.client.core.Asset;
 
 import java.time.ZonedDateTime;
 import java.util.List;

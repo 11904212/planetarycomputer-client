@@ -2,10 +2,10 @@ package at.ac.tuwien.ba.pcc;
 
 
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
-import at.ac.tuwien.ba.stac.client.StacClient;
-import at.ac.tuwien.ba.stac.client.core.Asset;
-import at.ac.tuwien.ba.stac.client.core.Item;
-import at.ac.tuwien.ba.stac.client.search.ItemCollection;
+import io.github11904212.java.stac.client.StacClient;
+import io.github11904212.java.stac.client.core.Asset;
+import io.github11904212.java.stac.client.core.Item;
+import io.github11904212.java.stac.client.search.ItemCollection;
 
 import java.io.IOException;
 
