@@ -4,10 +4,10 @@ import at.ac.tuwien.ba.pcc.dto.SasToken;
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import at.ac.tuwien.ba.pcc.signing.TokenManager;
 import at.ac.tuwien.ba.pcc.dto.SignedLink;
-import at.ac.tuwien.ba.stac.client.core.Asset;
-import at.ac.tuwien.ba.stac.client.core.Item;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github11904212.java.stac.client.core.Asset;
+import io.github11904212.java.stac.client.core.Item;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class TokenManagerImpl implements TokenManager {
 
-    private final static String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1";
+    private static final String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1";
     private final ObjectMapper mapper;
     private String subscriptionKey;
     private final Map<String, SasToken> tokenCache = new HashMap<>();
