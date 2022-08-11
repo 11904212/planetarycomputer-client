@@ -79,7 +79,7 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
     }
 
     @Override
-    public SignedAsset sign(Asset asset, String collectionId) throws IOException {
-        return tokenManager.sign(asset, collectionId);
+    public SignedAsset sign(Asset asset) throws IOException {
+        return tokenManager.sign(asset);
     }
 }

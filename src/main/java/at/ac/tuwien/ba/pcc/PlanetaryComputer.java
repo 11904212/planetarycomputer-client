@@ -42,10 +42,9 @@ public interface PlanetaryComputer extends StacClient {
     /**
      * signs a single {@link Asset}
      * @param asset to sign
-     * @param collectionId the collection of the asset
      * @return a {@link SignedAsset}
      * @throws IOException
      */
-    SignedAsset sign(Asset asset, String collectionId) throws IOException;
+    SignedAsset sign(Asset asset) throws IOException;
 
 }

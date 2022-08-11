@@ -30,10 +30,8 @@ class TokenManagerImplTest {
 
     private TokenManager tokenManager;
 
-    private final String dummyCollectionId = "collection1";
-
     private final Asset dummyAsset1 = new AssetImpl(
-            "https://item1/asset1.tif",
+            String.format("https://storage1%s/container1/asset1.tif", TokenManagerImpl.BLOB_STORAGE_DOMAIN),
             "asset1",
             "asset1",
             "image",
@@ -41,7 +39,7 @@ class TokenManagerImplTest {
     );
 
     private final Asset dummyAsset2 = new AssetImpl(
-            "https://item1/asset2.tif",
+            String.format("https://storage1%s/container1/asset2.tif", TokenManagerImpl.BLOB_STORAGE_DOMAIN),
             "asset2",
             "asset2",
             "image",
@@ -52,6 +50,7 @@ class TokenManagerImplTest {
             "\"msft:expiry\": \"%s\"," +
             "\"token\": \"%s\"" +
             "}";
+
 
     @BeforeEach
     void initialize() throws IOException {
@@ -69,7 +68,7 @@ class TokenManagerImplTest {
 
 
     @Test
-    void signInPlace_whenItemsOfSameCollection_expectOneApiCall() throws Exception {
+    void sign_whenAssetsOfSameContainer_expectOneApiCall() throws Exception {
         var token1 = "token1";
         var date1 = ZonedDateTime.now().plusMinutes(30);
 
@@ -79,10 +78,9 @@ class TokenManagerImplTest {
                 .setBody(body)
                 .addHeader("Content-Type", "application/json"));
 
-        var item1 = creatItem(dummyCollectionId);
 
-        tokenManager.signInPlace(item1);
-        tokenManager.signInPlace(creatItem(dummyCollectionId));
+        tokenManager.sign(dummyAsset1);
+        tokenManager.sign(dummyAsset2);
 
         assertThat(mockApi.getRequestCount())
                 .withFailMessage("only one query should be performed")
@@ -90,7 +88,7 @@ class TokenManagerImplTest {
 
         RecordedRequest request = mockApi.takeRequest();
         assertThat(request.getPath())
-                .isEqualTo("/token/" + dummyCollectionId);
+                .isEqualTo("/token/storage1/container1");
 
         assertThat(request.getMethod())
                 .withFailMessage("client did not use a GET request")
@@ -98,10 +96,9 @@ class TokenManagerImplTest {
     }
 
     @Test
-    void signInPlace_whenItemsOfDifferentCollection_expectMultipleApiCalls() throws Exception {
+    void sign_whenAssetsOfDifferentContainers_expectMultipleApiCalls() throws Exception {
         var token1 = "token1";
         var date1 = ZonedDateTime.now().plusMinutes(30);
-        var collection2 = "collection2";
 
         String body1 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token1);
         String body2 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), "token2");
@@ -113,11 +110,16 @@ class TokenManagerImplTest {
                 .setBody(body2)
                 .addHeader("Content-Type", "application/json"));
 
-        var item1 = creatItem(dummyCollectionId);
-        var item2 = creatItem(collection2);
+        var asset2 = new AssetImpl(
+                dummyAsset1.getHref().replace("container1", "container2"),
+                "asset2",
+                "some text",
+                "type2",
+                Collections.emptyList()
+        );
 
-        tokenManager.signInPlace(item1);
-        tokenManager.signInPlace(item2);
+        tokenManager.sign(dummyAsset1);
+        tokenManager.sign(asset2);
 
         assertThat(mockApi.getRequestCount())
                 .withFailMessage("two queries should be performed")
@@ -125,11 +127,11 @@ class TokenManagerImplTest {
 
         RecordedRequest request1 = mockApi.takeRequest();
         assertThat(request1.getPath())
-                .isEqualTo("/token/" + dummyCollectionId);
+                .endsWith("container1");
 
         RecordedRequest request2 = mockApi.takeRequest();
         assertThat(request2.getPath())
-                .isEqualTo("/token/" + collection2);
+                .endsWith("container2");
 
     }
 
@@ -149,8 +151,8 @@ class TokenManagerImplTest {
                 .setBody(body2)
                 .addHeader("Content-Type", "application/json"));
 
-        tokenManager.sign(dummyAsset1, dummyCollectionId);
-        var asset2 = tokenManager.sign(dummyAsset1, dummyCollectionId);
+        tokenManager.sign(dummyAsset1);
+        var asset2 = tokenManager.sign(dummyAsset1);
 
         assertThat(mockApi.getRequestCount())
                 .withFailMessage("two queries should be performed")
@@ -171,7 +173,7 @@ class TokenManagerImplTest {
         mockApi.enqueue(new MockResponse()
                 .setResponseCode(404));
 
-        var item1 = creatItem(dummyCollectionId);
+        var item1 = creatItem();
 
         assertThatThrownBy(() -> tokenManager.signInPlace(item1))
                 .isInstanceOf(IOException.class);
@@ -184,7 +186,7 @@ class TokenManagerImplTest {
                 .setBody("{}")
                 .addHeader("Content-Type", "application/json"));
 
-        var item1 = creatItem(dummyCollectionId);
+        var item1 = creatItem();
 
         assertThatThrownBy(() -> tokenManager.signInPlace(item1))
                 .isInstanceOf(IOException.class);
@@ -200,7 +202,7 @@ class TokenManagerImplTest {
                 .setBody(body1)
                 .addHeader("Content-Type", "application/json"));
 
-        var item1 = creatItem(dummyCollectionId);
+        var item1 = creatItem();
 
         assertThatThrownBy(() -> tokenManager.signInPlace(item1))
                 .isInstanceOf(IOException.class);
@@ -216,7 +218,7 @@ class TokenManagerImplTest {
                 .setBody(body1)
                 .addHeader("Content-Type", "application/json"));
 
-        var item1 = creatItem(dummyCollectionId);
+        var item1 = creatItem();
 
         assertThatThrownBy(() -> tokenManager.signInPlace(item1))
                 .isInstanceOf(IOException.class);
@@ -235,7 +237,7 @@ class TokenManagerImplTest {
                 .setBody(body)
                 .addHeader("Content-Type", "application/json"));
 
-        var item = tokenManager.signInPlace(creatItem(dummyCollectionId));
+        var item = tokenManager.signInPlace(creatItem());
 
         assertThat(item.getAssets()).hasSize(2);
 
@@ -263,10 +265,8 @@ class TokenManagerImplTest {
                 .setBody(body)
                 .addHeader("Content-Type", "application/json"));
 
-        var signedAsset1 = tokenManager.sign(dummyAsset1, dummyCollectionId);
-        var url1 = signedAsset1.getHref();
-        var signedAsset2 = tokenManager.sign(signedAsset1, dummyCollectionId);
-        var url2 = signedAsset2.getHref();
+        var signedAsset1 = tokenManager.sign(dummyAsset1);
+        var signedAsset2 = tokenManager.sign(signedAsset1);
 
         assertThat(signedAsset2.getHref()).containsOnlyOnce(token1);
     }
@@ -287,8 +287,8 @@ class TokenManagerImplTest {
                 .setBody(body2)
                 .addHeader("Content-Type", "application/json"));
 
-        var signedAsset1 = tokenManager.sign(dummyAsset1, dummyCollectionId);
-        var signedAsset2 = tokenManager.sign(signedAsset1, dummyCollectionId);
+        var signedAsset1 = tokenManager.sign(dummyAsset1);
+        var signedAsset2 = tokenManager.sign(signedAsset1);
 
         assertThat(signedAsset2.getHref())
                 .doesNotContain(token1)
@@ -300,7 +300,7 @@ class TokenManagerImplTest {
 
 
 
-    private Item creatItem(String collection){
+    private Item creatItem(){
         Map<String, Asset> assets = new HashMap<>();
         assets.put(
                 "asset1",
@@ -317,8 +317,7 @@ class TokenManagerImplTest {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 assets,
-                collection
-
+                "collection1"
         );
     }
 }

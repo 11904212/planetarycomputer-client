@@ -11,8 +11,6 @@ public interface TokenManager {
     // TODO: add clone based methode
     Item signInPlace(Item item) throws IOException;
 
-    SignedAsset sign(Asset asset, String collectionId) throws IOException;
-
     SignedAsset sign(Asset asset) throws IOException;
 
 }
