@@ -17,20 +17,15 @@ import java.util.Map;
 
 public class TokenManagerImpl implements TokenManager {
 
-    private static final String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1";
+    private final String sasEndpoint;
     private final ObjectMapper mapper;
     private String subscriptionKey;
     private final Map<String, SasToken> tokenCache = new HashMap<>();
 
-    public TokenManagerImpl(){
-
+    public TokenManagerImpl(String sasEndpoint, String subscriptionKey) {
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-    }
-
-    public TokenManagerImpl(String subscriptionKey) {
-        this();
+        this.sasEndpoint = sasEndpoint;
         this.subscriptionKey = subscriptionKey;
     }
 
@@ -93,7 +88,7 @@ public class TokenManagerImpl implements TokenManager {
     }
 
     private SignedLink directSignHref(String href) throws IOException {
-        StringBuilder query = new StringBuilder(SAS_ENDPOINT);
+        StringBuilder query = new StringBuilder(sasEndpoint);
         query.append("/sign?href=" );
         query.append(href);
 
@@ -110,8 +105,8 @@ public class TokenManagerImpl implements TokenManager {
 
     private SasToken requestToken(String collectionId) throws IOException  {
 
-        StringBuilder query = new StringBuilder(SAS_ENDPOINT);
-        query.append("/token/" );
+        StringBuilder query = new StringBuilder(sasEndpoint);
+        query.append("token/" );
         query.append(collectionId);
 
         if (this.subscriptionKey != null) {
