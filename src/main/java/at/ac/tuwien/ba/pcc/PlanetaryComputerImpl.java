@@ -21,6 +21,7 @@ import java.util.Optional;
 public class PlanetaryComputerImpl implements PlanetaryComputer {
 
     private static final String PC_ENDPOINT = "https://planetarycomputer.microsoft.com/api/stac/v1/";
+    private static final String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1/";
 
 
     private final StacClient stacClient;
@@ -30,7 +31,7 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
 
         this.stacClient = new StacClientImpl(new URL(PC_ENDPOINT));
 
-        this.tokenManager = new TokenManagerImpl();
+        this.tokenManager = new TokenManagerImpl(SAS_ENDPOINT, null);
 
     }
 
