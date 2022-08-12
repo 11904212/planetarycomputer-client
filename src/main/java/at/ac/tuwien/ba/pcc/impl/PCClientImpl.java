@@ -3,7 +3,8 @@ package at.ac.tuwien.ba.pcc.impl;
 import at.ac.tuwien.ba.pcc.PlanetaryComputerClient;
 import at.ac.tuwien.ba.pcc.dto.PCClientConfig;
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
-import at.ac.tuwien.ba.pcc.signing.TokenManager;
+import at.ac.tuwien.ba.pcc.signing.ResourceSigner;
+import at.ac.tuwien.ba.pcc.signing.impl.ResourceSignerImpl;
 import at.ac.tuwien.ba.pcc.signing.impl.TokenManagerImpl;
 import io.github11904212.java.stac.client.StacClient;
 import io.github11904212.java.stac.client.core.Asset;
@@ -21,13 +22,15 @@ import java.util.Optional;
 public class PCClientImpl implements PlanetaryComputerClient {
 
     private final StacClient stacClient;
-    private final TokenManager tokenManager;
+    private final ResourceSigner resourceSigner;
 
     public PCClientImpl(PCClientConfig config) {
 
         this.stacClient = new StacClientImpl(config.getPcEndpoint());
 
-        this.tokenManager = new TokenManagerImpl(config.getSasEndpoint(), config.getSubscriptionKey());
+        var tokenManager = new TokenManagerImpl(config.getSasEndpoint(), config.getSubscriptionKey());
+
+        this.resourceSigner = new ResourceSignerImpl(tokenManager);
 
     }
 
@@ -49,7 +52,7 @@ public class PCClientImpl implements PlanetaryComputerClient {
     public Optional<Item> getItem(String collectionId, String itemId) throws IOException {
         var item = stacClient.getItem(collectionId, itemId);
         if (item.isPresent()) {
-            return Optional.of(tokenManager.signInPlace(item.get()));
+            return Optional.of(resourceSigner.signInPlace(item.get()));
         }
         return Optional.empty();
     }
@@ -67,19 +70,19 @@ public class PCClientImpl implements PlanetaryComputerClient {
 
     @Override
     public Item sign(Item item) throws IOException {
-        return tokenManager.signInPlace(item);
+        return resourceSigner.signInPlace(item);
     }
 
     @Override
     public ItemCollection sign(ItemCollection itemCollection) throws IOException {
         for (var item : itemCollection.getItems()){
-            tokenManager.signInPlace(item);
+            resourceSigner.signInPlace(item);
         }
         return itemCollection;
     }
 
     @Override
     public SignedAsset sign(Asset asset) throws IOException {
-        return tokenManager.sign(asset);
+        return resourceSigner.sign(asset);
     }
 }

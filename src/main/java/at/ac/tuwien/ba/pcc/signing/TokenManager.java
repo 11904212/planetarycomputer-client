@@ -1,16 +1,11 @@
 package at.ac.tuwien.ba.pcc.signing;
 
-import io.github11904212.java.stac.client.core.Asset;
-import io.github11904212.java.stac.client.core.Item;
+import at.ac.tuwien.ba.pcc.dto.SasToken;
 
 import java.io.IOException;
 
-
 public interface TokenManager {
 
-    // TODO: add clone based methode
-    Item signInPlace(Item item) throws IOException;
-
-    SignedAsset sign(Asset asset) throws IOException;
+    SasToken getToken(String account, String container) throws IOException;
 
 }
