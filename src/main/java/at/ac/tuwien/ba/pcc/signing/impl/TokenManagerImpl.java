@@ -124,7 +124,7 @@ public class TokenManagerImpl implements TokenManager {
 
     private String extractContainer(URL url) throws MalformedURLException {
         var parts = url.getPath().split("/");
-        if (parts.length < 2) {
+        if (parts.length < 3) {
             throw new MalformedURLException(String.format("the given asset url did not contain a container. %s", url));
         }
         return parts[1];

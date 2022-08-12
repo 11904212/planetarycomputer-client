@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -169,6 +170,31 @@ class TokenManagerImplTest {
     }
 
     @Test
+    void sign_whenSubscriptionKeyProvided_expectUsageOfKey() throws Exception {
+        var token1 = "token1";
+        var date1 = ZonedDateTime.now().minusMinutes(30);
+        String body1 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token1);
+        mockApi.enqueue(new MockResponse()
+                .setBody(body1)
+                .addHeader("Content-Type", "application/json"));
+
+        var subscriptionKey = "key1234";
+
+        var subTokenManager = new TokenManagerImpl(mockApi.url("").url(), subscriptionKey);
+
+        subTokenManager.sign(dummyAsset1);
+
+        assertThat(mockApi.getRequestCount())
+                .withFailMessage("only one should be performed")
+                .isEqualTo(1);
+
+        RecordedRequest request1 = mockApi.takeRequest();
+        assertThat(request1.getPath())
+                .contains("subscription-key=" + subscriptionKey);
+
+    }
+
+    @Test
     void signInPlace_whenApiReturnsError_expectException() {
 
         mockApi.enqueue(new MockResponse()
@@ -296,6 +322,81 @@ class TokenManagerImplTest {
                 .contains(token2)
         ;
         assertThat(signedAsset2.getExpiry()).isEqualTo(date2);
+
+    }
+
+    @Test
+    void sign_whenAssetHrefIsNotABlobStorageUrl_expectSameHref() throws Exception {
+        String token1 = "token1";
+        var date1 = ZonedDateTime.now().minusMinutes(30);
+        String body1 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token1);
+        mockApi.enqueue(new MockResponse()
+                .setBody(body1)
+                .addHeader("Content-Type", "application/json"));
+
+        var notBlobAsset = new AssetImpl(
+                String.format("https://storage1%s/container1/asset1.tif", ".not.a.blob.storage"),
+                "notBlobAsset",
+                "notBlobAsset",
+                "image",
+                Collections.emptyList()
+        );
+
+        var signedAsset = tokenManager.sign(notBlobAsset);
+
+        assertThat(signedAsset.getHref()).isEqualTo(notBlobAsset.getHref());
+
+        assertThat(mockApi.getRequestCount())
+                .withFailMessage("no request should be performed")
+                .isZero();
+
+    }
+
+    @Test
+    void sign_whenAssetHrefHasNoStorage_expectException() throws Exception {
+        String token1 = "token1";
+        var date1 = ZonedDateTime.now().minusMinutes(30);
+        String body1 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token1);
+        mockApi.enqueue(new MockResponse()
+                .setBody(body1)
+                .addHeader("Content-Type", "application/json"));
+
+        var malformedHrefAsset = new AssetImpl(
+                String.format("https://%s/container1/asset1.tif", TokenManagerImpl.BLOB_STORAGE_DOMAIN),
+                "malformedHrefAsset",
+                "malformedHrefAsset",
+                "image",
+                Collections.emptyList()
+        );
+
+        assertThatThrownBy(() -> tokenManager.sign(malformedHrefAsset))
+                .isInstanceOf(MalformedURLException.class)
+                .hasMessageContaining("storage")
+        ;
+
+    }
+
+    @Test
+    void sign_whenAssetHrefHasNoContainer_expectException() throws Exception {
+        String token1 = "token1";
+        var date1 = ZonedDateTime.now().minusMinutes(30);
+        String body1 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token1);
+        mockApi.enqueue(new MockResponse()
+                .setBody(body1)
+                .addHeader("Content-Type", "application/json"));
+
+        var malformedHrefAsset = new AssetImpl(
+                String.format("https://storage1%s/asset1.tif", TokenManagerImpl.BLOB_STORAGE_DOMAIN),
+                "malformedHrefAsset",
+                "malformedHrefAsset",
+                "image",
+                Collections.emptyList()
+        );
+
+        assertThatThrownBy(() -> tokenManager.sign(malformedHrefAsset))
+                .isInstanceOf(MalformedURLException.class)
+                .hasMessageContaining("container")
+        ;
 
     }
 
