@@ -1,4 +1,4 @@
-package at.ac.tuwien.ba.pcc.dto;
+package at.ac.tuwien.ba.pcc.signing.impl;
 
 import java.time.ZonedDateTime;
 

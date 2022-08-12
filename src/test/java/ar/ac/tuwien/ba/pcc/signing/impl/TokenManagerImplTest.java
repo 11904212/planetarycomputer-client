@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,7 +58,7 @@ class TokenManagerImplTest {
         mockApi = new MockWebServer();
         mockApi.start();
 
-        tokenManager = new TokenManagerImpl(mockApi.url("").uri().toString(), null);
+        tokenManager = new TokenManagerImpl(mockApi.url("").uri().toURL(), null);
 
     }
 
@@ -272,7 +273,7 @@ class TokenManagerImplTest {
     }
 
     @Test
-    void sign_whenSignedItemIsExpired_expectNewSigning() throws Exception {
+    void sign_whenSignedAssetIsExpired_expectNewSigning() throws Exception {
         String token1 = "token1";
         var date1 = ZonedDateTime.now().minusMinutes(30);
         String body1 = String.format(TOKEN_TEMPLATE, date1.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token1);

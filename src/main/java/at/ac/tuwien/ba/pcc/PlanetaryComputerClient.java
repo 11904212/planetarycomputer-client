@@ -13,7 +13,7 @@ import java.io.IOException;
  * signs the resources of the planetary computer with a sas token to make them accessible.
  * for more information @see <a href="https://planetarycomputer.microsoft.com/docs/concepts/sas/</a>
  */
-public interface PlanetaryComputer extends StacClient {
+public interface PlanetaryComputerClient extends StacClient {
 
 
     /**

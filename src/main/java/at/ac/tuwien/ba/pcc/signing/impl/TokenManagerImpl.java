@@ -3,7 +3,6 @@ package at.ac.tuwien.ba.pcc.signing.impl;
 import at.ac.tuwien.ba.pcc.dto.SasToken;
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import at.ac.tuwien.ba.pcc.signing.TokenManager;
-import at.ac.tuwien.ba.pcc.dto.SignedLink;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github11904212.java.stac.client.core.Asset;
@@ -20,12 +19,12 @@ public class TokenManagerImpl implements TokenManager {
 
     public static final String BLOB_STORAGE_DOMAIN = ".blob.core.windows.net";
 
-    private final String sasEndpoint;
+    private final URL sasEndpoint;
     private final ObjectMapper mapper;
     private final String subscriptionKey;
     private final Map<String, SasToken> tokenCache = new HashMap<>();
 
-    public TokenManagerImpl(String sasEndpoint, String subscriptionKey) {
+    public TokenManagerImpl(URL sasEndpoint, String subscriptionKey) {
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.sasEndpoint = sasEndpoint;
@@ -96,11 +95,9 @@ public class TokenManagerImpl implements TokenManager {
         }
 
 
-        StringBuilder query = new StringBuilder(sasEndpoint);
-        query.append("token/" );
-        query.append(account);
-        query.append("/");
-        query.append(container);
+        StringBuilder query = new StringBuilder(sasEndpoint.toString());
+        String tokenPath = String.format("token/%s/%s", account, container);
+        query.append(tokenPath);
 
         if (this.subscriptionKey != null) {
             query.append("?subscription-key=");

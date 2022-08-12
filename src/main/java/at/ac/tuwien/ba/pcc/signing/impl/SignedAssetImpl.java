@@ -1,6 +1,5 @@
 package at.ac.tuwien.ba.pcc.signing.impl;
 
-import at.ac.tuwien.ba.pcc.dto.SignedLink;
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import io.github11904212.java.stac.client.core.Asset;
 

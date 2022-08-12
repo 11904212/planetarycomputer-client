@@ -1,5 +1,7 @@
-package at.ac.tuwien.ba.pcc;
+package at.ac.tuwien.ba.pcc.impl;
 
+import at.ac.tuwien.ba.pcc.PlanetaryComputerClient;
+import at.ac.tuwien.ba.pcc.dto.PCClientConfig;
 import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import at.ac.tuwien.ba.pcc.signing.TokenManager;
 import at.ac.tuwien.ba.pcc.signing.impl.TokenManagerImpl;
@@ -13,26 +15,24 @@ import io.github11904212.java.stac.client.search.ItemCollection;
 import io.github11904212.java.stac.client.search.dto.QueryParameter;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Optional;
 
-public class PlanetaryComputerImpl implements PlanetaryComputer {
-
-    private static final String PC_ENDPOINT = "https://planetarycomputer.microsoft.com/api/stac/v1/";
-    private static final String SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1/";
-
+public class PCClientImpl implements PlanetaryComputerClient {
 
     private final StacClient stacClient;
     private final TokenManager tokenManager;
 
-    public PlanetaryComputerImpl() throws MalformedURLException {
+    public PCClientImpl(PCClientConfig config) {
 
-        this.stacClient = new StacClientImpl(new URL(PC_ENDPOINT));
+        this.stacClient = new StacClientImpl(config.getPcEndpoint());
 
-        this.tokenManager = new TokenManagerImpl(SAS_ENDPOINT, null);
+        this.tokenManager = new TokenManagerImpl(config.getSasEndpoint(), config.getSubscriptionKey());
 
+    }
+
+    public PCClientImpl() {
+        this(PCClientConfig.defaultConfig());
     }
 
     @Override
