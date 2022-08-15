@@ -1,8 +1,8 @@
-package at.ac.tuwien.ba.pcc.signing.impl;
+package at.ac.tuwien.ba.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.signing.SignedAsset;
-import at.ac.tuwien.ba.pcc.signing.ResourceSigner;
-import at.ac.tuwien.ba.pcc.signing.TokenManager;
+import at.ac.tuwien.ba.pcc.SignedAsset;
+import at.ac.tuwien.ba.pcc.ResourceSigner;
+import at.ac.tuwien.ba.pcc.TokenManager;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
 
@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.ZonedDateTime;
 
-public class ResourceSignerImpl implements ResourceSigner {
+class ResourceSignerImpl implements ResourceSigner {
 
     public static final String BLOB_STORAGE_DOMAIN = ".blob.core.windows.net";
 

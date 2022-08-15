@@ -7,7 +7,7 @@
     <name>PlanetaryComputer Client</name>
     <groupId>at.ac.tuwien.ba</groupId>
     <artifactId>planetarycomputer-client</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2-TEST-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <build>
@@ -68,7 +68,7 @@
         <jackson.version>2.13.3</jackson.version>
 
         <!-- testing -->
-        <org.junit.jupiter.version>5.8.2</org.junit.jupiter.version>
+        <org.junit.jupiter.version>5.9.0</org.junit.jupiter.version>
         <org.assertj.version>3.23.1</org.assertj.version>
         <mil.nga.sf.wkt.version>1.0.3</mil.nga.sf.wkt.version>
         <com.squareup.okhttp3.version>4.10.0</com.squareup.okhttp3.version>

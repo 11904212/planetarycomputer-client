@@ -1,4 +1,4 @@
-package at.ac.tuwien.ba.pcc.signing;
+package at.ac.tuwien.ba.pcc;
 
 import at.ac.tuwien.ba.pcc.dto.SasToken;
 

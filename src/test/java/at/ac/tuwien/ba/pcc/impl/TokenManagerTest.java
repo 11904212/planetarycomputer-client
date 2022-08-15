@@ -1,7 +1,6 @@
-package ar.ac.tuwien.ba.pcc.signing.impl;
+package at.ac.tuwien.ba.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.signing.TokenManager;
-import at.ac.tuwien.ba.pcc.signing.impl.TokenManagerImpl;
+import at.ac.tuwien.ba.pcc.TokenManager;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;

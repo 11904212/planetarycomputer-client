@@ -1,7 +1,7 @@
-package at.ac.tuwien.ba.pcc.signing.impl;
+package at.ac.tuwien.ba.pcc.impl;
 
 import at.ac.tuwien.ba.pcc.dto.SasToken;
-import at.ac.tuwien.ba.pcc.signing.TokenManager;
+import at.ac.tuwien.ba.pcc.TokenManager;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -11,7 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TokenManagerImpl implements TokenManager {
+class TokenManagerImpl implements TokenManager {
 
     private final URL sasEndpoint;
     private final ObjectMapper mapper;

@@ -1,8 +1,8 @@
-package at.ac.tuwien.ba.pcc.signing.impl;
+package at.ac.tuwien.ba.pcc.impl;
 
 import java.time.ZonedDateTime;
 
-public class SignedLink {
+class SignedLink {
 
     private final String href;
     private final ZonedDateTime msftExpiry;

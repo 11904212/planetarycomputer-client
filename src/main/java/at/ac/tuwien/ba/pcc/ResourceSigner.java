@@ -1,4 +1,4 @@
-package at.ac.tuwien.ba.pcc.signing;
+package at.ac.tuwien.ba.pcc;
 
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;

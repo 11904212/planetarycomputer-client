@@ -1,9 +1,7 @@
-package ar.ac.tuwien.ba.pcc.signing.impl;
+package at.ac.tuwien.ba.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.signing.SignedAsset;
-import at.ac.tuwien.ba.pcc.signing.ResourceSigner;
-import at.ac.tuwien.ba.pcc.signing.impl.ResourceSignerImpl;
-import at.ac.tuwien.ba.pcc.signing.impl.TokenManagerImpl;
+import at.ac.tuwien.ba.pcc.SignedAsset;
+import at.ac.tuwien.ba.pcc.ResourceSigner;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
 import io.github11904212.java.stac.client.core.impl.AssetImpl;
