@@ -2,15 +2,18 @@ package at.ac.tuwien.ba.pcc.impl;
 
 import at.ac.tuwien.ba.pcc.SignedAsset;
 import at.ac.tuwien.ba.pcc.ResourceSigner;
+import at.ac.tuwien.ba.pcc.TokenManager;
+import at.ac.tuwien.ba.pcc.dto.SasToken;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
 import io.github11904212.java.stac.client.core.impl.AssetImpl;
 import io.github11904212.java.stac.client.core.impl.ItemImpl;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -22,15 +25,30 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
-class ResourceSignerIntegrationTest {
 
-    private MockWebServer mockApi;
+@ExtendWith(MockitoExtension.class)
+class ResourceSignerTest {
 
     private ResourceSigner resourceSigner;
 
+    @Mock
+    private TokenManager mockTokenManager;
+
+    private static final String DEFAULT_STORAGE = "storage1";
+    private static final String DEFAULT_CONTAINER = "container1";
+
     private final Asset dummyAsset1 = new AssetImpl(
-            String.format("https://storage1%s/container1/asset1.tif", ResourceSignerImpl.BLOB_STORAGE_DOMAIN),
+            String.format("https://%s%s/%s/asset1.tif",
+                    DEFAULT_STORAGE,
+                    ResourceSignerImpl.BLOB_STORAGE_DOMAIN,
+                    DEFAULT_CONTAINER
+            ),
             "asset1",
             "asset1",
             "image",
@@ -38,33 +56,26 @@ class ResourceSignerIntegrationTest {
     );
 
     private final Asset dummyAsset2 = new AssetImpl(
-            String.format("https://storage1%s/container1/asset2.tif", ResourceSignerImpl.BLOB_STORAGE_DOMAIN),
+            String.format("https://%s%s/%s/asset2.tif",
+                    DEFAULT_STORAGE,
+                    ResourceSignerImpl.BLOB_STORAGE_DOMAIN,
+                    DEFAULT_CONTAINER
+            ),
             "asset2",
             "asset2",
             "image",
             Collections.emptyList()
     );
 
-    private static final String TOKEN_TEMPLATE = "{" +
-            "\"msft:expiry\": \"%s\"," +
-            "\"token\": \"%s\"" +
-            "}";
-
 
     @BeforeEach
-    void initialize() throws IOException {
-        mockApi = new MockWebServer();
-        mockApi.start();
-
-        var tokenManager = new TokenManagerImpl(mockApi.url("").uri().toURL(), null);
-
-        resourceSigner = new ResourceSignerImpl(tokenManager);
+    void initialize() {
+        resourceSigner = new ResourceSignerImpl(mockTokenManager);
 
     }
 
     @AfterEach
-    void cleanUp() throws IOException {
-        mockApi.shutdown();
+    void cleanUp() {
     }
 
     @Test
@@ -72,7 +83,7 @@ class ResourceSignerIntegrationTest {
         String token1 = "token1";
         var date1 = ZonedDateTime.now().plusMinutes(30);
 
-        mockTokenResponse(token1, date1);
+        setupTokenMock(DEFAULT_STORAGE, DEFAULT_CONTAINER, token1, date1);
 
         var item = resourceSigner.signInPlace(creatItem());
 
@@ -89,6 +100,8 @@ class ResourceSignerIntegrationTest {
         assertThat(signedAsset1.getHref()).contains(token1);
         assertThat(signedAsset1.getExpiry()).isEqualTo(date1);
 
+        verify(mockTokenManager, times(2)).getToken(DEFAULT_STORAGE, DEFAULT_CONTAINER);
+
     }
 
     @Test
@@ -96,7 +109,7 @@ class ResourceSignerIntegrationTest {
         String token1 = "token1";
         var date1 = ZonedDateTime.now().plusMinutes(30);
 
-        mockTokenResponse(token1, date1);
+        setupTokenMock(DEFAULT_STORAGE, DEFAULT_CONTAINER, token1, date1);
 
         var signedAsset1 = resourceSigner.sign(dummyAsset1);
         var signedAsset2 = resourceSigner.sign(signedAsset1);
@@ -108,11 +121,11 @@ class ResourceSignerIntegrationTest {
     void sign_whenSignedAssetIsExpired_expectNewSigning() throws Exception {
         String token1 = "token1";
         var date1 = ZonedDateTime.now().minusMinutes(30);
-        mockTokenResponse(token1, date1);
+        setupTokenMock(DEFAULT_STORAGE, DEFAULT_CONTAINER, token1, date1);
 
         String token2 = "token2";
         var date2 = ZonedDateTime.now().plusMinutes(30);
-        mockTokenResponse(token2, date2);
+        setupTokenMock(DEFAULT_STORAGE, DEFAULT_CONTAINER, token2, date2);
 
         var signedAsset1 = resourceSigner.sign(dummyAsset1);
         var signedAsset2 = resourceSigner.sign(signedAsset1);
@@ -127,9 +140,6 @@ class ResourceSignerIntegrationTest {
 
     @Test
     void sign_whenAssetHrefIsNotABlobStorageUrl_expectSameHref() throws Exception {
-        String token1 = "token1";
-        var date1 = ZonedDateTime.now().minusMinutes(30);
-        mockTokenResponse(token1, date1);
 
         var notBlobAsset = new AssetImpl(
                 String.format("https://storage1%s/container1/asset1.tif", ".not.a.blob.storage"),
@@ -143,17 +153,12 @@ class ResourceSignerIntegrationTest {
 
         assertThat(signedAsset.getHref()).isEqualTo(notBlobAsset.getHref());
 
-        assertThat(mockApi.getRequestCount())
-                .withFailMessage("no request should be performed")
-                .isZero();
+        verify(mockTokenManager, never()).getToken(any(), any());
 
     }
 
     @Test
-    void sign_whenAssetHrefHasNoStorage_expectException() {
-        String token1 = "token1";
-        var date1 = ZonedDateTime.now().minusMinutes(30);
-        mockTokenResponse(token1, date1);
+    void sign_whenAssetHrefHasNoStorage_expectException() throws IOException {
 
         var malformedHrefAsset = new AssetImpl(
                 String.format("https://%s/container1/asset1.tif", ResourceSignerImpl.BLOB_STORAGE_DOMAIN),
@@ -163,6 +168,8 @@ class ResourceSignerIntegrationTest {
                 Collections.emptyList()
         );
 
+        verify(mockTokenManager, times(0)).getToken(any(), any());
+
         assertThatThrownBy(() -> resourceSigner.sign(malformedHrefAsset))
                 .isInstanceOf(MalformedURLException.class)
                 .hasMessageContaining("storage")
@@ -171,10 +178,7 @@ class ResourceSignerIntegrationTest {
     }
 
     @Test
-    void sign_whenAssetHrefHasNoContainer_expectException() {
-        String token1 = "token1";
-        var date1 = ZonedDateTime.now().minusMinutes(30);
-        mockTokenResponse(token1, date1);
+    void sign_whenAssetHrefHasNoContainer_expectException() throws IOException {
 
         var malformedHrefAsset = new AssetImpl(
                 String.format("https://storage1%s/asset1.tif", ResourceSignerImpl.BLOB_STORAGE_DOMAIN),
@@ -183,6 +187,8 @@ class ResourceSignerIntegrationTest {
                 "image",
                 Collections.emptyList()
         );
+
+        verify(mockTokenManager, times(0)).getToken(any(), any());
 
         assertThatThrownBy(() -> resourceSigner.sign(malformedHrefAsset))
                 .isInstanceOf(MalformedURLException.class)
@@ -214,12 +220,9 @@ class ResourceSignerIntegrationTest {
         );
     }
 
-    private void mockTokenResponse(String token, ZonedDateTime date){
-
-        String body = String.format(TOKEN_TEMPLATE, date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME), token);
-        mockApi.enqueue(new MockResponse()
-                .setBody(body)
-                .addHeader("Content-Type", "application/json"));
-
+    private void setupTokenMock(String storage, String container, String token, ZonedDateTime date) throws IOException {
+        when(mockTokenManager.getToken(storage, container))
+                .thenReturn(new SasToken(token, date.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
     }
+
 }
