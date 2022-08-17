@@ -1,4 +1,4 @@
-package at.ac.tuwien.ba.pcc.impl;
+package io.github11904212.pcc.impl;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;

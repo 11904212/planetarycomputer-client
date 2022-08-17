@@ -1,6 +1,7 @@
-package at.ac.tuwien.ba.pcc;
+package io.github11904212.pcc;
 
 import io.github11904212.java.stac.client.core.Asset;
+import io.github11904212.pcc.dto.SasToken;
 
 import java.time.ZonedDateTime;
 
@@ -10,7 +11,7 @@ import java.time.ZonedDateTime;
 public interface SignedAsset extends Asset {
 
     /**
-     * get the expiry datetime of the used {@link at.ac.tuwien.ba.pcc.dto.SasToken}.
+     * get the expiry datetime of the used {@link SasToken}.
      * @return the expiry datetime.
      */
     ZonedDateTime getExpiry();

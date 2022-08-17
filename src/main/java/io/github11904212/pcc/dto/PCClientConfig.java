@@ -1,6 +1,7 @@
-package at.ac.tuwien.ba.pcc.dto;
+package io.github11904212.pcc.dto;
 
-import at.ac.tuwien.ba.pcc.exceptions.MalformedConfigurationException;
+import io.github11904212.pcc.PlanetaryComputerClient;
+import io.github11904212.pcc.exceptions.MalformedConfigurationException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +16,7 @@ public class PCClientConfig {
     private final String subscriptionKey;
 
     /**
-     * creat a configuration for a {@link at.ac.tuwien.ba.pcc.PlanetaryComputerClient}
+     * creat a configuration for a {@link PlanetaryComputerClient}
      * @param stacEndpoint the {@link URL} of the planetary computer stac-api.
      * @param sasEndpoint the {@link URL} of planetary computer sas-api, for signing the resources.
      * @param subscriptionKey an optional <a href="https://planetarycomputer.microsoft.com/account/request">subscription key</a> for the sasEndpoint.
@@ -32,7 +33,7 @@ public class PCClientConfig {
     }
 
     /**
-     * creat a configuration for a {@link at.ac.tuwien.ba.pcc.PlanetaryComputerClient}
+     * creat a configuration for a {@link PlanetaryComputerClient}
      * @param stacEndpoint the {@link URL} of the planetary computer stac-api.
      * @param sasEndpoint the {@link URL} of planetary computer sas-api, for signing the resources.
      */
