@@ -1,8 +1,6 @@
 package at.ac.tuwien.ba.pcc.impl;
 
 import at.ac.tuwien.ba.pcc.SignedAsset;
-import at.ac.tuwien.ba.pcc.ResourceSigner;
-import at.ac.tuwien.ba.pcc.TokenManager;
 import at.ac.tuwien.ba.pcc.dto.SasToken;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
@@ -46,7 +44,7 @@ class ResourceSignerTest {
     private final Asset dummyAsset1 = new AssetImpl(
             String.format("https://%s%s/%s/asset1.tif",
                     DEFAULT_STORAGE,
-                    ResourceSignerImpl.BLOB_STORAGE_DOMAIN,
+                    ResourceSigner.BLOB_STORAGE_DOMAIN,
                     DEFAULT_CONTAINER
             ),
             "asset1",
@@ -58,7 +56,7 @@ class ResourceSignerTest {
     private final Asset dummyAsset2 = new AssetImpl(
             String.format("https://%s%s/%s/asset2.tif",
                     DEFAULT_STORAGE,
-                    ResourceSignerImpl.BLOB_STORAGE_DOMAIN,
+                    ResourceSigner.BLOB_STORAGE_DOMAIN,
                     DEFAULT_CONTAINER
             ),
             "asset2",
@@ -70,7 +68,7 @@ class ResourceSignerTest {
 
     @BeforeEach
     void initialize() {
-        resourceSigner = new ResourceSignerImpl(mockTokenManager);
+        resourceSigner = new ResourceSigner(mockTokenManager);
 
     }
 
@@ -161,7 +159,7 @@ class ResourceSignerTest {
     void sign_whenAssetHrefHasNoStorage_expectException() throws IOException {
 
         var malformedHrefAsset = new AssetImpl(
-                String.format("https://%s/container1/asset1.tif", ResourceSignerImpl.BLOB_STORAGE_DOMAIN),
+                String.format("https://%s/container1/asset1.tif", ResourceSigner.BLOB_STORAGE_DOMAIN),
                 "malformedHrefAsset",
                 "malformedHrefAsset",
                 "image",
@@ -181,7 +179,7 @@ class ResourceSignerTest {
     void sign_whenAssetHrefHasNoContainer_expectException() throws IOException {
 
         var malformedHrefAsset = new AssetImpl(
-                String.format("https://storage1%s/asset1.tif", ResourceSignerImpl.BLOB_STORAGE_DOMAIN),
+                String.format("https://storage1%s/asset1.tif", ResourceSigner.BLOB_STORAGE_DOMAIN),
                 "malformedHrefAsset",
                 "malformedHrefAsset",
                 "image",

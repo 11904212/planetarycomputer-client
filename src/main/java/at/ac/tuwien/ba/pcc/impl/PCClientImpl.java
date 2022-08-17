@@ -3,7 +3,6 @@ package at.ac.tuwien.ba.pcc.impl;
 import at.ac.tuwien.ba.pcc.PlanetaryComputerClient;
 import at.ac.tuwien.ba.pcc.dto.PCClientConfig;
 import at.ac.tuwien.ba.pcc.SignedAsset;
-import at.ac.tuwien.ba.pcc.ResourceSigner;
 import io.github11904212.java.stac.client.StacClient;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Catalog;
@@ -26,9 +25,9 @@ public class PCClientImpl implements PlanetaryComputerClient {
 
         this.stacClient = new StacClientImpl(config.getStacEndpoint());
 
-        var tokenManager = new TokenManagerImpl(config.getSasEndpoint(), config.getSubscriptionKey());
+        var tokenManager = new TokenManager(config.getSasEndpoint(), config.getSubscriptionKey());
 
-        this.resourceSigner = new ResourceSignerImpl(tokenManager);
+        this.resourceSigner = new ResourceSigner(tokenManager);
 
     }
 

@@ -1,8 +1,6 @@
 package at.ac.tuwien.ba.pcc.impl;
 
 import at.ac.tuwien.ba.pcc.SignedAsset;
-import at.ac.tuwien.ba.pcc.ResourceSigner;
-import at.ac.tuwien.ba.pcc.TokenManager;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
 
@@ -11,18 +9,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.ZonedDateTime;
 
-class ResourceSignerImpl implements ResourceSigner {
+class ResourceSigner {
 
     public static final String BLOB_STORAGE_DOMAIN = ".blob.core.windows.net";
 
     private final TokenManager tokenManager;
 
 
-    public ResourceSignerImpl(TokenManager tokenManager) {
+    public ResourceSigner(TokenManager tokenManager) {
         this.tokenManager = tokenManager;
     }
 
-    @Override
     public Item signInPlace(Item item) throws IOException {
 
         var assets = item.getAssets();
@@ -34,7 +31,6 @@ class ResourceSignerImpl implements ResourceSigner {
     }
 
 
-    @Override
     public SignedAsset sign(Asset asset) throws IOException {
         var signedLink = signHref(asset.getHref());
         return new SignedAssetImpl(

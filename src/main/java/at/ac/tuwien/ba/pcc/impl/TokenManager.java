@@ -1,7 +1,6 @@
 package at.ac.tuwien.ba.pcc.impl;
 
 import at.ac.tuwien.ba.pcc.dto.SasToken;
-import at.ac.tuwien.ba.pcc.TokenManager;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -11,7 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-class TokenManagerImpl implements TokenManager {
+class TokenManager {
 
     private final URL sasEndpoint;
     private final ObjectMapper mapper;
@@ -19,7 +18,7 @@ class TokenManagerImpl implements TokenManager {
     private final Map<String, SasToken> tokenCache = new HashMap<>();
 
 
-    public TokenManagerImpl(URL sasEndpoint, String subscriptionKey) {
+    public TokenManager(URL sasEndpoint, String subscriptionKey) {
         this.mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.sasEndpoint = sasEndpoint;

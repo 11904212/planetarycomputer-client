@@ -1,6 +1,5 @@
 package at.ac.tuwien.ba.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.TokenManager;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -37,7 +36,7 @@ class TokenManagerTest {
         mockApi = new MockWebServer();
         mockApi.start();
 
-        tokenManager = new TokenManagerImpl(mockApi.url("").uri().toURL(), null);
+        tokenManager = new TokenManager(mockApi.url("").uri().toURL(), null);
 
     }
 
@@ -129,7 +128,7 @@ class TokenManagerTest {
 
         var subscriptionKey = "key1234";
 
-        var subTokenManager = new TokenManagerImpl(mockApi.url("").url(), subscriptionKey);
+        var subTokenManager = new TokenManager(mockApi.url("").url(), subscriptionKey);
 
         subTokenManager.getToken(dummyAccount, dummyContainer);
 
