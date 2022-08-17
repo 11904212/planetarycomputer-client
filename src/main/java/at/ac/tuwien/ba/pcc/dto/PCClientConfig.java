@@ -16,9 +16,9 @@ public class PCClientConfig {
 
     /**
      * creat a configuration for a {@link at.ac.tuwien.ba.pcc.PlanetaryComputerClient}
-     * @param stacEndpoint the {@link URL} of the planetary computer api.
-     * @param sasEndpoint the {@link URL} of planetary computer sas api, for signing the resources.
-     * @param subscriptionKey an optional @see <a href="https://planetarycomputer.microsoft.com/account/request">subscription key</a> for the sasEndpoint.
+     * @param stacEndpoint the {@link URL} of the planetary computer stac-api.
+     * @param sasEndpoint the {@link URL} of planetary computer sas-api, for signing the resources.
+     * @param subscriptionKey an optional <a href="https://planetarycomputer.microsoft.com/account/request">subscription key</a> for the sasEndpoint.
      *                        can be null.
      */
     public PCClientConfig(
@@ -33,8 +33,8 @@ public class PCClientConfig {
 
     /**
      * creat a configuration for a {@link at.ac.tuwien.ba.pcc.PlanetaryComputerClient}
-     * @param stacEndpoint the {@link URL} of the planetary computer api.
-     * @param sasEndpoint the {@link URL} of planetary computer sas api, for signing the resources.
+     * @param stacEndpoint the {@link URL} of the planetary computer stac-api.
+     * @param sasEndpoint the {@link URL} of planetary computer sas-api, for signing the resources.
      */
     public PCClientConfig(
             URL stacEndpoint,
@@ -68,7 +68,8 @@ public class PCClientConfig {
     }
 
     /**
-     * a default config of the planetarycomputer.
+     * a default config of the
+     * <a href="https://planetarycomputer.microsoft.com/docs/overview/about">planetary computer</a>.
      * @return the default {@link PCClientConfig}.
      */
     public static PCClientConfig defaultConfig(){
@@ -79,8 +80,8 @@ public class PCClientConfig {
             );
         } catch (MalformedURLException e) {
             throw new MalformedConfigurationException(
-                    "predefined URLs are malformed, pleas inform the maintainer of this project. " +
-                            "You can supply a custom configuration as workaround.", e
+                    "Predefined URLs are malformed, please inform the maintainer of this project. " +
+                            "You can provide a custom configuration as a workaround.", e
             );
         }
     }
