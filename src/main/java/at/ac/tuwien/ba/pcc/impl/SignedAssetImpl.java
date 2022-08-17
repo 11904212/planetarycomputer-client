@@ -1,14 +1,13 @@
-package at.ac.tuwien.ba.pcc.signing.impl;
+package at.ac.tuwien.ba.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.dto.SignedLink;
-import at.ac.tuwien.ba.pcc.signing.SignedAsset;
+import at.ac.tuwien.ba.pcc.SignedAsset;
 import io.github11904212.java.stac.client.core.Asset;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public class SignedAssetImpl implements SignedAsset {
+class SignedAssetImpl implements SignedAsset {
 
     private final String href;
     private final String title;

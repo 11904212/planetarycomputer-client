@@ -1,7 +1,6 @@
 package at.ac.tuwien.ba.pcc;
 
 
-import at.ac.tuwien.ba.pcc.signing.SignedAsset;
 import io.github11904212.java.stac.client.StacClient;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
@@ -13,7 +12,7 @@ import java.io.IOException;
  * signs the resources of the planetary computer with a sas token to make them accessible.
  * for more information @see <a href="https://planetarycomputer.microsoft.com/docs/concepts/sas/</a>
  */
-public interface PlanetaryComputer extends StacClient {
+public interface PlanetaryComputerClient extends StacClient {
 
 
     /**
@@ -42,10 +41,9 @@ public interface PlanetaryComputer extends StacClient {
     /**
      * signs a single {@link Asset}
      * @param asset to sign
-     * @param collectionId the collection of the asset
      * @return a {@link SignedAsset}
      * @throws IOException
      */
-    SignedAsset sign(Asset asset, String collectionId) throws IOException;
+    SignedAsset sign(Asset asset) throws IOException;
 
 }

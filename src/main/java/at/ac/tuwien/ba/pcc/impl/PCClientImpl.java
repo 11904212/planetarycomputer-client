@@ -1,8 +1,8 @@
-package at.ac.tuwien.ba.pcc;
+package at.ac.tuwien.ba.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.signing.SignedAsset;
-import at.ac.tuwien.ba.pcc.signing.TokenManager;
-import at.ac.tuwien.ba.pcc.signing.impl.TokenManagerImpl;
+import at.ac.tuwien.ba.pcc.PlanetaryComputerClient;
+import at.ac.tuwien.ba.pcc.dto.PCClientConfig;
+import at.ac.tuwien.ba.pcc.SignedAsset;
 import io.github11904212.java.stac.client.StacClient;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Catalog;
@@ -13,25 +13,26 @@ import io.github11904212.java.stac.client.search.ItemCollection;
 import io.github11904212.java.stac.client.search.dto.QueryParameter;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Optional;
 
-public class PlanetaryComputerImpl implements PlanetaryComputer {
-
-    private static final String PC_ENDPOINT = "https://planetarycomputer.microsoft.com/api/stac/v1/";
-
+public class PCClientImpl implements PlanetaryComputerClient {
 
     private final StacClient stacClient;
-    private final TokenManager tokenManager;
+    private final ResourceSigner resourceSigner;
 
-    public PlanetaryComputerImpl() throws MalformedURLException {
+    public PCClientImpl(PCClientConfig config) {
 
-        this.stacClient = new StacClientImpl(new URL(PC_ENDPOINT));
+        this.stacClient = new StacClientImpl(config.getStacEndpoint());
 
-        this.tokenManager = new TokenManagerImpl();
+        var tokenManager = new TokenManager(config.getSasEndpoint(), config.getSubscriptionKey());
 
+        this.resourceSigner = new ResourceSigner(tokenManager);
+
+    }
+
+    public PCClientImpl() {
+        this(PCClientConfig.defaultConfig());
     }
 
     @Override
@@ -48,7 +49,7 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
     public Optional<Item> getItem(String collectionId, String itemId) throws IOException {
         var item = stacClient.getItem(collectionId, itemId);
         if (item.isPresent()) {
-            return Optional.of(tokenManager.signInPlace(item.get()));
+            return Optional.of(sign(item.get()));
         }
         return Optional.empty();
     }
@@ -66,19 +67,19 @@ public class PlanetaryComputerImpl implements PlanetaryComputer {
 
     @Override
     public Item sign(Item item) throws IOException {
-        return tokenManager.signInPlace(item);
+        return resourceSigner.signInPlace(item);
     }
 
     @Override
     public ItemCollection sign(ItemCollection itemCollection) throws IOException {
         for (var item : itemCollection.getItems()){
-            tokenManager.signInPlace(item);
+            resourceSigner.signInPlace(item);
         }
         return itemCollection;
     }
 
     @Override
-    public SignedAsset sign(Asset asset, String collectionId) throws IOException {
-        return tokenManager.sign(asset, collectionId);
+    public SignedAsset sign(Asset asset) throws IOException {
+        return resourceSigner.sign(asset);
     }
 }
