@@ -29,35 +29,9 @@
                 <version>${maven-surefire-plugin.version}</version>
             </plugin>
 
-            <!-- needed for deploy on GitHub -->
-            <plugin>
-                <groupId>net.nicoulaj.maven.plugins</groupId>
-                <artifactId>checksum-maven-plugin</artifactId>
-                <version>1.9</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>artifacts</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <algorithms>
-                        <algorithm>SHA-256</algorithm>
-                    </algorithms>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
-    <!-- configuration for GitHub Package Hosting -->
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub 11904212 Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/11904212/planetarycomputer-client</url>
-        </repository>
-    </distributionManagement>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
