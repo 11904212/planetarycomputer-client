@@ -7,6 +7,7 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -47,6 +48,7 @@ class TokenManagerTest {
 
 
     @Test
+    @Timeout(1)
     void getToken_whenSameAccountAndContainer_expectOneApiCall() throws Exception {
         var date1 = ZonedDateTime.now().plusMinutes(30);
 
@@ -69,6 +71,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void sign_whenAssetsOfDifferentContainers_expectMultipleApiCalls() throws Exception {
         var date1 = ZonedDateTime.now().plusMinutes(30);
         var newContainer = "container2";
@@ -94,6 +97,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void sign_whenTokenIsExpired_expectRequestNewToken() throws Exception {
 
         var date1 = ZonedDateTime.now().minusMinutes(30);
@@ -117,6 +121,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void sign_whenSubscriptionKeyProvided_expectUsageOfKey() throws Exception {
 
         var date1 = ZonedDateTime.now().minusMinutes(30);
@@ -139,6 +144,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void signInPlace_whenApiReturnsError_expectException() {
 
         mockApi.enqueue(new MockResponse()
@@ -149,6 +155,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void signInPlace_whenApiReturnsEmptyBody_expectException() {
 
         mockApi.enqueue(new MockResponse()
@@ -161,6 +168,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void signInPlace_whenApiReturnsInvalidDate_expectException() {
 
         String body1 = String.format(TOKEN_TEMPLATE, "2022-08-10T25:57:20Z", "token1");
@@ -175,6 +183,7 @@ class TokenManagerTest {
     }
 
     @Test
+    @Timeout(1)
     void signInPlace_whenApiReturnsInvalidToken_expectException() {
 
         String body1 = String.format(TOKEN_TEMPLATE, "2022-08-10T12:57:20Z", "\"null\"");
