@@ -24,7 +24,7 @@ public class PCClientImpl implements PlanetaryComputerClient {
 
     public PCClientImpl(PCClientConfig config) {
 
-        this.stacClient = new StacClientImpl(config.getPcEndpoint());
+        this.stacClient = new StacClientImpl(config.getStacEndpoint());
 
         var tokenManager = new TokenManagerImpl(config.getSasEndpoint(), config.getSubscriptionKey());
 
@@ -50,7 +50,7 @@ public class PCClientImpl implements PlanetaryComputerClient {
     public Optional<Item> getItem(String collectionId, String itemId) throws IOException {
         var item = stacClient.getItem(collectionId, itemId);
         if (item.isPresent()) {
-            return Optional.of(resourceSigner.signInPlace(item.get()));
+            return Optional.of(sign(item.get()));
         }
         return Optional.empty();
     }

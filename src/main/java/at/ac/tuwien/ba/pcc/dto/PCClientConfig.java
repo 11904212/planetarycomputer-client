@@ -10,45 +10,45 @@ import java.net.URL;
  */
 public class PCClientConfig {
 
-    private final URL pcEndpoint;
+    private final URL stacEndpoint;
     private final URL sasEndpoint;
     private final String subscriptionKey;
 
     /**
      * creat a configuration for a {@link at.ac.tuwien.ba.pcc.PlanetaryComputerClient}
-     * @param pcEndpoint the {@link URL} of the planetary computer api.
+     * @param stacEndpoint the {@link URL} of the planetary computer api.
      * @param sasEndpoint the {@link URL} of planetary computer sas api, for signing the resources.
      * @param subscriptionKey an optional @see <a href="https://planetarycomputer.microsoft.com/account/request">subscription key</a> for the sasEndpoint.
      *                        can be null.
      */
     public PCClientConfig(
-            URL pcEndpoint,
+            URL stacEndpoint,
             URL sasEndpoint,
             String subscriptionKey
     ) {
-        this.pcEndpoint = pcEndpoint;
+        this.stacEndpoint = stacEndpoint;
         this.sasEndpoint = sasEndpoint;
         this.subscriptionKey = subscriptionKey;
     }
 
     /**
      * creat a configuration for a {@link at.ac.tuwien.ba.pcc.PlanetaryComputerClient}
-     * @param pcEndpoint the {@link URL} of the planetary computer api.
+     * @param stacEndpoint the {@link URL} of the planetary computer api.
      * @param sasEndpoint the {@link URL} of planetary computer sas api, for signing the resources.
      */
     public PCClientConfig(
-            URL pcEndpoint,
+            URL stacEndpoint,
             URL sasEndpoint
     ) {
-        this(pcEndpoint, sasEndpoint, null);
+        this(stacEndpoint, sasEndpoint, null);
     }
 
     /**
      * the URL of the stac-api.
      * @return the {@link URL} of the api.
      */
-    public URL getPcEndpoint() {
-        return pcEndpoint;
+    public URL getStacEndpoint() {
+        return stacEndpoint;
     }
 
     /**
