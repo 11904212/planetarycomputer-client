@@ -1,4 +1,4 @@
-package at.ac.tuwien.ba.pcc;
+package io.github11904212.pcc;
 
 
 import io.github11904212.java.stac.client.StacClient;

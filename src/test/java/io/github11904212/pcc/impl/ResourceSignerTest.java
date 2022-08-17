@@ -1,11 +1,12 @@
-package at.ac.tuwien.ba.pcc.impl;
+package io.github11904212.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.SignedAsset;
-import at.ac.tuwien.ba.pcc.dto.SasToken;
+import io.github11904212.pcc.SignedAsset;
+import io.github11904212.pcc.dto.SasToken;
 import io.github11904212.java.stac.client.core.Asset;
 import io.github11904212.java.stac.client.core.Item;
 import io.github11904212.java.stac.client.core.impl.AssetImpl;
 import io.github11904212.java.stac.client.core.impl.ItemImpl;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,7 +113,7 @@ class ResourceSignerTest {
         var signedAsset1 = resourceSigner.sign(dummyAsset1);
         var signedAsset2 = resourceSigner.sign(signedAsset1);
 
-        assertThat(signedAsset2.getHref()).containsOnlyOnce(token1);
+        Assertions.assertThat(signedAsset2.getHref()).containsOnlyOnce(token1);
     }
 
     @Test
@@ -128,11 +129,11 @@ class ResourceSignerTest {
         var signedAsset1 = resourceSigner.sign(dummyAsset1);
         var signedAsset2 = resourceSigner.sign(signedAsset1);
 
-        assertThat(signedAsset2.getHref())
+        Assertions.assertThat(signedAsset2.getHref())
                 .doesNotContain(token1)
                 .contains(token2)
         ;
-        assertThat(signedAsset2.getExpiry()).isEqualTo(date2);
+        Assertions.assertThat(signedAsset2.getExpiry()).isEqualTo(date2);
 
     }
 
@@ -149,7 +150,7 @@ class ResourceSignerTest {
 
         var signedAsset = resourceSigner.sign(notBlobAsset);
 
-        assertThat(signedAsset.getHref()).isEqualTo(notBlobAsset.getHref());
+        Assertions.assertThat(signedAsset.getHref()).isEqualTo(notBlobAsset.getHref());
 
         verify(mockTokenManager, never()).getToken(any(), any());
 

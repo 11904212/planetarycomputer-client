@@ -1,4 +1,4 @@
-package at.ac.tuwien.ba.pcc.dto;
+package io.github11904212.pcc.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

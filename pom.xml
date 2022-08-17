@@ -6,7 +6,7 @@
 
     <groupId>io.github.11904212</groupId>
     <artifactId>planetarycomputer-client</artifactId>
-    <version>alpha.0.1</version>
+    <version>alpha.0.2</version>
     <packaging>jar</packaging>
 
     <name>PlanetaryComputer Client</name>

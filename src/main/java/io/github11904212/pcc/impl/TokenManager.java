@@ -1,6 +1,6 @@
-package at.ac.tuwien.ba.pcc.impl;
+package io.github11904212.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.dto.SasToken;
+import io.github11904212.pcc.dto.SasToken;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

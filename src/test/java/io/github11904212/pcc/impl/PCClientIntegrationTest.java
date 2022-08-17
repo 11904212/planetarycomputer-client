@@ -1,7 +1,7 @@
-package at.ac.tuwien.ba.pcc.impl;
+package io.github11904212.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.PlanetaryComputerClient;
-import at.ac.tuwien.ba.pcc.dto.PCClientConfig;
+import io.github11904212.pcc.PlanetaryComputerClient;
+import io.github11904212.pcc.dto.PCClientConfig;
 import io.github11904212.java.stac.client.search.dto.QueryParameter;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;

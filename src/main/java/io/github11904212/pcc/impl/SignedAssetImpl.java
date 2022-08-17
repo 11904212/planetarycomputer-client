@@ -1,6 +1,6 @@
-package at.ac.tuwien.ba.pcc.impl;
+package io.github11904212.pcc.impl;
 
-import at.ac.tuwien.ba.pcc.SignedAsset;
+import io.github11904212.pcc.SignedAsset;
 import io.github11904212.java.stac.client.core.Asset;
 
 import java.time.ZonedDateTime;
