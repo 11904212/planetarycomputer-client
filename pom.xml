@@ -6,7 +6,7 @@
 
     <groupId>io.github.11904212</groupId>
     <artifactId>planetarycomputer-client</artifactId>
-    <version>alpha.0.2</version>
+    <version>alpha.0.3</version>
     <packaging>jar</packaging>
 
     <name>PlanetaryComputer Client</name>
@@ -144,15 +144,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- project dependencies -->
-        <stac-client.version>1.0.0-alpha.0.5</stac-client.version>
-        <jackson.version>2.13.3</jackson.version>
+        <stac-client.version>1.0.0-alpha.0.6</stac-client.version>
+        <jackson.version>2.14.0</jackson.version>
 
         <!-- testing -->
-        <org.junit.jupiter.version>5.9.0</org.junit.jupiter.version>
+        <org.junit.jupiter.version>5.9.1</org.junit.jupiter.version>
         <org.assertj.version>3.23.1</org.assertj.version>
-        <mil.nga.sf.wkt.version>1.0.3</mil.nga.sf.wkt.version>
         <com.squareup.okhttp3.version>4.10.0</com.squareup.okhttp3.version>
-        <mockito-core.version>4.7.0</mockito-core.version>
+        <mockito-core.version>4.9.0</mockito-core.version>
     </properties>
 
 
