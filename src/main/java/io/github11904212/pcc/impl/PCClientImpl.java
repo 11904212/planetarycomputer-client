@@ -13,7 +13,6 @@ import io.github11904212.java.stac.client.search.ItemCollection;
 import io.github11904212.java.stac.client.search.dto.QueryParameter;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Optional;
 
 public class PCClientImpl implements PlanetaryComputerClient {
@@ -55,7 +54,7 @@ public class PCClientImpl implements PlanetaryComputerClient {
     }
 
     @Override
-    public ItemCollection search(QueryParameter queryParameter) throws IOException, URISyntaxException, InterruptedException {
+    public ItemCollection search(QueryParameter queryParameter) throws IOException, InterruptedException {
         var itemCollection = stacClient.search(queryParameter);
         return sign(itemCollection);
     }
