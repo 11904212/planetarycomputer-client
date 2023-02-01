@@ -27,7 +27,7 @@ ItemCollection result = pcClient.search(parameter);
 <dependency>
   <groupId>io.github.11904212</groupId>
   <artifactId>planetarycomputer-client</artifactId>
-  <version>alpha.0.3</version>
+  <version>alpha.0.4</version>
 </dependency>
 ```
 
